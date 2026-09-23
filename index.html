@@ -1,0 +1,3354 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>ELBOB HUB</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+tailwind.config = {
+    darkMode: "class"
+};
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+*{
+    font-family:"Cairo",sans-serif;
+}
+
+body{
+    min-height:100vh;
+}
+
+.glass{
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+}
+
+.hidden-view{
+    display:none!important;
+}
+
+.modal-bg{
+    background:rgba(0,0,0,.72);
+    backdrop-filter:blur(7px);
+}
+
+.loader{
+    width:22px;
+    height:22px;
+    border:3px solid rgba(255,255,255,.25);
+    border-top-color:white;
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
+.toast{
+    animation:toastIn .25s ease;
+}
+
+@keyframes toastIn{
+    from{
+        opacity:0;
+        transform:translateY(12px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.card-hover{
+    transition:.2s ease;
+}
+
+.card-hover:hover{
+    transform:translateY(-2px);
+}
+
+input,button,select,textarea{
+    transition:.15s ease;
+}
+
+html[dir="ltr"] input,
+html[dir="ltr"] textarea{
+    text-align:left;
+}
+
+html[dir="rtl"] input,
+html[dir="rtl"] textarea{
+    text-align:right;
+}
+
+.ltr-input{
+    direction:ltr!important;
+    text-align:left!important;
+}
+
+.file-input{
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body class="bg-slate-100 text-slate-900 dark:bg-[#070b12] dark:text-white transition-colors duration-300">
+
+<!-- HEADER -->
+
+<header class="sticky top-0 z-40 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#070b12]/85 glass">
+
+<div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+
+<div class="flex items-center gap-3">
+
+<div class="w-11 h-11 rounded-2xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-black text-xl shadow-lg">
+E
+</div>
+
+<div>
+<h1 class="font-black text-xl tracking-wide">ELBOB HUB</h1>
+
+<p data-i18n="headerSubtitle"
+class="text-xs text-slate-500 dark:text-slate-400">
+مكان يليق بشغلك 🖤
+</p>
+</div>
+
+</div>
+
+<div class="flex items-center gap-2">
+
+<button
+onclick="toggleLanguage()"
+id="languageBtn"
+class="px-3 py-2 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-sm font-bold">
+EN
+</button>
+
+<button
+onclick="toggleTheme()"
+id="themeBtn"
+class="w-10 h-10 rounded-xl bg-slate-200 dark:bg-white/10">
+☀️
+</button>
+
+<button
+onclick="logout()"
+id="logoutBtn"
+class="hidden px-4 py-2 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 font-bold"
+data-i18n="logout">
+خروج
+</button>
+
+</div>
+</div>
+</header>
+
+
+<!-- AUTH -->
+
+<main id="authView"
+class="min-h-[calc(100vh-82px)] flex items-center justify-center px-4 py-10">
+
+<div class="w-full max-w-md">
+
+<div class="text-center mb-7">
+
+<div class="inline-flex w-20 h-20 rounded-[28px] bg-black dark:bg-white text-white dark:text-black items-center justify-center text-4xl font-black shadow-2xl mb-5">
+E
+</div>
+
+<h2 class="text-3xl font-black">ELBOB HUB</h2>
+
+<p data-i18n="authSubtitle"
+class="mt-2 text-slate-500 dark:text-slate-400">
+تعبك محسوب.. وإنجازك مقدّر 🖤
+</p>
+
+</div>
+
+<div class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 md:p-7 shadow-2xl">
+
+<div class="grid grid-cols-2 gap-2 mb-6">
+
+<button
+id="loginTab"
+onclick="showAuthMode('login')"
+class="py-3 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-bold"
+data-i18n="loginTab">
+تسجيل الدخول
+</button>
+
+<button
+id="registerTab"
+onclick="showAuthMode('register')"
+class="py-3 rounded-2xl bg-slate-100 dark:bg-white/5 font-bold"
+data-i18n="registerTab">
+إنشاء حساب
+</button>
+
+</div>
+
+
+<form id="loginForm" onsubmit="login(event)" class="space-y-4">
+
+<div>
+<label data-i18n="email"
+class="block mb-2 text-sm font-bold">
+البريد الإلكتروني
+</label>
+
+<input
+id="loginEmail"
+type="email"
+required
+placeholder="example@email.com"
+data-i18n-placeholder="emailPlaceholder"
+class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+</div>
+
+<div>
+<label data-i18n="password"
+class="block mb-2 text-sm font-bold">
+كلمة المرور
+</label>
+
+<input
+id="loginPassword"
+type="password"
+required
+placeholder="••••••••"
+class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+</div>
+
+<button
+id="loginSubmit"
+class="w-full py-3.5 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-black"
+data-i18n="loginButton">
+دخول
+</button>
+
+</form>
+
+
+<form id="registerForm"
+onsubmit="register(event)"
+class="space-y-4 hidden-view">
+
+<div>
+<label data-i18n="fullName"
+class="block mb-2 text-sm font-bold">
+الاسم الكامل
+</label>
+
+<input
+id="regName"
+required
+placeholder="اسمك"
+class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none">
+</div>
+
+<div>
+<label data-i18n="username"
+class="block mb-2 text-sm font-bold">
+اسم المستخدم
+</label>
+
+<input
+id="regUsername"
+required
+placeholder="username"
+class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+</div>
+
+<div>
+<label data-i18n="cashNumber"
+class="block mb-2 text-sm font-bold">
+رقم الكاش
+</label>
+
+<input
+id="regCash"
+required
+placeholder="01xxxxxxxxx"
+class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+</div>
+
+<div>
+<label data-i18n="email"
+class="block mb-2 text-sm font-bold">
+البريد الإلكتروني
+</label>
+
+<input
+id="regEmail"
+type="email"
+required
+placeholder="example@email.com"
+class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+</div>
+
+<div>
+<label data-i18n="password"
+class="block mb-2 text-sm font-bold">
+كلمة المرور
+</label>
+
+<input
+id="regPassword"
+type="password"
+minlength="6"
+required
+placeholder="6 أحرف على الأقل"
+class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+</div>
+
+<button
+id="registerSubmit"
+class="w-full py-3.5 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-black"
+data-i18n="registerButton">
+إنشاء الحساب
+</button>
+
+</form>
+
+</div>
+</div>
+</main>
+
+
+<!-- WORKER -->
+
+<main id="workerView"
+class="hidden-view max-w-7xl mx-auto px-4 py-7">
+
+<section class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 md:p-7 mb-6">
+
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+
+<div>
+
+<p data-i18n="welcome"
+class="text-sm text-slate-500 dark:text-slate-400">
+أهلاً بيك
+</p>
+
+<h2 id="workerName"
+class="text-2xl md:text-3xl font-black mt-1">
+-
+</h2>
+
+<p id="workerUsername"
+class="text-sm text-slate-500 mt-1">
+-
+</p>
+
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto">
+
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-5 py-4 min-w-[180px]">
+
+<p data-i18n="fullName"
+class="text-xs text-slate-500">
+الاسم
+</p>
+
+<p id="accountName" class="font-black mt-1">-</p>
+
+</div>
+
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-5 py-4 min-w-[180px]">
+
+<p data-i18n="username"
+class="text-xs text-slate-500">
+اسم المستخدم
+</p>
+
+<p id="accountUsername" class="font-black mt-1">-</p>
+
+</div>
+
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-5 py-4 min-w-[180px]">
+
+<p data-i18n="cashNumber"
+class="text-xs text-slate-500">
+رقم الكاش
+</p>
+
+<div class="flex gap-2 mt-1">
+
+<input
+id="cashInput"
+class="w-full bg-transparent outline-none font-black ltr-input">
+
+<button
+onclick="saveCash()"
+class="text-xs px-3 py-1 rounded-xl bg-black text-white dark:bg-white dark:text-black font-bold"
+data-i18n="save">
+حفظ
+</button>
+
+</div>
+</div>
+
+</div>
+</div>
+</section>
+
+
+<section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
+
+<div class="rounded-3xl p-5 border border-emerald-500/20 bg-emerald-500/10">
+
+<p data-i18n="todayValid"
+class="text-sm text-emerald-600 dark:text-emerald-300">
+Valid اليوم
+</p>
+
+<p id="todayValid"
+class="text-3xl font-black mt-2">0</p>
+
+</div>
+
+<div class="rounded-3xl p-5 border border-yellow-500/20 bg-yellow-500/10">
+
+<p data-i18n="todayLocked"
+class="text-sm text-yellow-600 dark:text-yellow-300">
+Locked اليوم
+</p>
+
+<p id="todayLocked"
+class="text-3xl font-black mt-2">0</p>
+
+</div>
+
+<div class="rounded-3xl p-5 border border-blue-500/20 bg-blue-500/10">
+
+<p data-i18n="totalValid"
+class="text-sm text-blue-600 dark:text-blue-300">
+Total Valid
+</p>
+
+<p id="totalValid"
+class="text-3xl font-black mt-2">0</p>
+
+</div>
+
+</section>
+
+
+<section class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 md:p-7 mb-7">
+
+<div class="mb-6">
+
+<h3 data-i18n="newSubmission"
+class="text-xl font-black">
+تسليم شغل جديد
+</h3>
+
+<p data-i18n="motivation"
+class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+كل تسليمة بتقربك لهدفك 🔥
+</p>
+
+</div>
+
+<form id="submissionForm"
+onsubmit="submitWork(event)"
+class="space-y-5">
+
+<div class="grid md:grid-cols-2 gap-4">
+
+<div>
+<label data-i18n="validCount"
+class="block mb-2 font-bold text-sm">
+Valid Count
+</label>
+
+<input
+id="validCount"
+type="number"
+min="0"
+value="0"
+required
+class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+</div>
+
+<div>
+<label data-i18n="lockedCount"
+class="block mb-2 font-bold text-sm">
+Locked Count
+</label>
+
+<input
+id="lockedCount"
+type="number"
+min="0"
+value="0"
+required
+class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+</div>
+
+</div>
+
+<div>
+<label data-i18n="txtFile"
+class="block mb-2 font-bold text-sm">
+ملف TXT
+</label>
+
+<input
+id="workFile"
+type="file"
+accept=".txt,text/plain"
+required
+class="file-input w-full px-4 py-4 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10">
+</div>
+
+<div>
+<label data-i18n="checkerImage"
+class="block mb-2 font-bold text-sm">
+صورة Checker
+</label>
+
+<input
+id="proofFile"
+type="file"
+accept="image/*"
+required
+class="file-input w-full px-4 py-4 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10">
+</div>
+
+<button
+id="submitWorkBtn"
+class="w-full py-4 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-black"
+data-i18n="submitWork">
+إرسال التسليمة
+</button>
+
+</form>
+</section>
+
+
+<section>
+
+<div class="mb-4">
+
+<h3 data-i18n="mySubmissions"
+class="text-xl font-black">
+تسليماتي
+</h3>
+
+<p data-i18n="mySubmissionsSubtitle"
+class="text-sm text-slate-500">
+كل شغلك وتاريخ مراجعته
+</p>
+
+</div>
+
+<div id="workerSubmissions" class="space-y-4"></div>
+
+</section>
+
+</main>
+
+
+<!-- OWNER -->
+
+<main id="ownerView"
+class="hidden-view max-w-7xl mx-auto px-4 py-7">
+
+<section class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 md:p-7 mb-6">
+
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+<div>
+
+<p data-i18n="dashboard"
+class="text-sm text-slate-500">
+لوحة التحكم
+</p>
+
+<h2 data-i18n="ownerDashboard"
+class="text-3xl font-black mt-1">
+Owner Dashboard 👑
+</h2>
+
+<p data-i18n="ownerSubtitle"
+class="text-sm text-slate-500 mt-1">
+إدارة العمال والتسليمات والمدفوعات
+</p>
+
+</div>
+
+<button
+onclick="loadOwnerData()"
+class="px-5 py-3 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-black"
+data-i18n="refresh">
+🔄 تحديث
+</button>
+
+</div>
+</section>
+
+
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-7">
+
+<div class="rounded-3xl p-5 bg-blue-500/10 border border-blue-500/20">
+<p data-i18n="workers"
+class="text-sm text-blue-600 dark:text-blue-300">
+العمال
+</p>
+<p id="ownerWorkersCount"
+class="text-3xl font-black mt-2">0</p>
+</div>
+
+<div class="rounded-3xl p-5 bg-yellow-500/10 border border-yellow-500/20">
+<p data-i18n="submissions"
+class="text-sm text-yellow-600 dark:text-yellow-300">
+التسليمات
+</p>
+<p id="ownerSubmissionsCount"
+class="text-3xl font-black mt-2">0</p>
+</div>
+
+<div class="rounded-3xl p-5 bg-emerald-500/10 border border-emerald-500/20">
+<p data-i18n="paid"
+class="text-sm text-emerald-600 dark:text-emerald-300">
+تم الدفع
+</p>
+<p id="ownerPaidCount"
+class="text-3xl font-black mt-2">0</p>
+</div>
+
+<div class="rounded-3xl p-5 bg-red-500/10 border border-red-500/20">
+<p data-i18n="unpaid"
+class="text-sm text-red-600 dark:text-red-300">
+قيد الحساب
+</p>
+<p id="ownerUnpaidCount"
+class="text-3xl font-black mt-2">0</p>
+</div>
+
+</section>
+
+
+<section>
+
+<div class="mb-4">
+
+<h3 data-i18n="workers"
+class="text-xl font-black">
+العمال
+</h3>
+
+<p data-i18n="chooseWorker"
+class="text-sm text-slate-500">
+اختار العامل لمشاهدة شغله
+</p>
+
+</div>
+
+<div id="workersGrid"
+class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+
+</section>
+
+
+<section id="selectedWorkerSection"
+class="hidden-view mt-7">
+
+<div class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 md:p-7">
+
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+
+<div>
+
+<p data-i18n="selectedWorker"
+class="text-sm text-slate-500">
+العامل المحدد
+</p>
+
+<h3 id="selectedWorkerName"
+class="text-2xl font-black mt-1">
+-
+</h3>
+
+<p id="selectedWorkerUsername"
+class="text-sm text-slate-500 mt-1">
+-
+</p>
+
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 p-4">
+<p data-i18n="valid"
+class="text-xs text-slate-500">Valid</p>
+<p id="selectedValid"
+class="text-xl font-black mt-1">0</p>
+</div>
+
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 p-4">
+<p data-i18n="locked"
+class="text-xs text-slate-500">Locked</p>
+<p id="selectedLocked"
+class="text-xl font-black mt-1">0</p>
+</div>
+
+<div class="rounded-2xl bg-emerald-500/10 p-4">
+<p data-i18n="paid"
+class="text-xs text-emerald-600 dark:text-emerald-300">مدفوع</p>
+<p id="selectedPaid"
+class="text-xl font-black mt-1">0</p>
+</div>
+
+<div class="rounded-2xl bg-yellow-500/10 p-4">
+<p data-i18n="unpaid"
+class="text-xs text-yellow-600 dark:text-yellow-300">قيد الحساب</p>
+<p id="selectedUnpaid"
+class="text-xl font-black mt-1">0</p>
+</div>
+
+</div>
+</div>
+
+<div class="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex flex-wrap gap-3">
+
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-4 py-3">
+
+<span data-i18n="cashNumberLabel"
+class="text-xs text-slate-500">
+رقم الكاش:
+</span>
+
+<strong id="selectedCash" class="mr-1">-</strong>
+
+</div>
+
+<button
+id="toggleWorkerBtn"
+onclick="toggleSelectedWorker()"
+class="px-4 py-3 rounded-2xl font-black">
+-
+</button>
+
+</div>
+</div>
+
+
+<div class="mt-6">
+
+<h3 data-i18n="workerWork"
+class="text-xl font-black mb-4">
+شغل العامل
+</h3>
+
+<div id="selectedWorkerSubmissions"
+class="space-y-4"></div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<!-- MODAL -->
+
+<div id="confirmModal"
+class="hidden-view fixed inset-0 z-[100] modal-bg flex items-center justify-center px-4">
+
+<div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/10 p-6 shadow-2xl">
+
+<h3 id="modalTitle"
+class="text-xl font-black">
+تأكيد العملية
+</h3>
+
+<p id="modalText"
+class="text-sm text-slate-500 dark:text-slate-400 mt-3 leading-7">
+هل أنت متأكد؟
+</p>
+
+<div class="flex gap-3 mt-6">
+
+<button
+onclick="closeModal()"
+class="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-white/10 font-bold"
+data-i18n="cancel">
+إلغاء
+</button>
+
+<button
+id="confirmBtn"
+class="flex-1 py-3 rounded-2xl bg-red-600 text-white font-black"
+data-i18n="confirm">
+تأكيد
+</button>
+
+</div>
+</div>
+</div>
+
+
+<div id="toastContainer"
+class="fixed bottom-5 left-5 z-[200] space-y-3"></div>
+
+
+<script>
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+"https://ywmknardakcpncvhlosy.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_-eV0eYhMoP9pR_fJnC2tUQ_KrPggVdL";
+
+const db = window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY,
+{
+    auth:{
+        persistSession:false,
+        autoRefreshToken:false,
+        detectSessionInUrl:false
+    }
+});
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let currentUser = null;
+let currentProfile = null;
+
+let submissions = [];
+let profiles = [];
+
+let selectedWorker = null;
+let selectedWorkerSubmissions = [];
+
+let modalAction = null;
+let workerRefreshTimer = null;
+
+let lang =
+localStorage.getItem("elbob_language") || "ar";
+
+let theme =
+localStorage.getItem("elbob_theme") || "dark";
+
+
+/* =========================================================
+   TRANSLATIONS
+========================================================= */
+
+const translations = {
+
+ar:{
+headerSubtitle:"مكان يليق بشغلك 🖤",
+authSubtitle:"تعبك محسوب.. وإنجازك مقدّر 🖤",
+logout:"خروج",
+loginTab:"تسجيل الدخول",
+registerTab:"إنشاء حساب",
+email:"البريد الإلكتروني",
+password:"كلمة المرور",
+emailPlaceholder:"example@email.com",
+fullName:"الاسم الكامل",
+username:"اسم المستخدم",
+usernamePlaceholder:"username",
+cashNumber:"رقم الكاش",
+cashPlaceholder:"01xxxxxxxxx",
+loginButton:"دخول",
+registerButton:"إنشاء الحساب",
+welcome:"أهلاً بيك",
+save:"حفظ",
+todayValid:"Valid اليوم",
+todayLocked:"Locked اليوم",
+totalValid:"Total Valid",
+newSubmission:"تسليم شغل جديد",
+motivation:"كل تسليمة بتقربك لهدفك 🔥",
+validCount:"Valid Count",
+lockedCount:"Locked Count",
+txtFile:"ملف TXT",
+checkerImage:"صورة Checker",
+submitWork:"إرسال التسليمة",
+mySubmissions:"تسليماتي",
+mySubmissionsSubtitle:"كل شغلك وتاريخ مراجعته",
+dashboard:"لوحة التحكم",
+ownerDashboard:"Owner Dashboard 👑",
+ownerSubtitle:"إدارة العمال والتسليمات والمدفوعات",
+refresh:"🔄 تحديث",
+workers:"العمال",
+submissions:"التسليمات",
+paid:"تم الدفع",
+unpaid:"قيد الحساب",
+chooseWorker:"اختار العامل لمشاهدة شغله",
+selectedWorker:"العامل المحدد",
+cashNumberLabel:"رقم الكاش:",
+workerWork:"شغل العامل",
+cancel:"إلغاء",
+confirm:"تأكيد",
+noSubmissions:"لسه مفيش تسليمات",
+noSubmissionsSubtitle:"ابعت أول تسليمة وابدأ شغلك 🔥",
+noWorkers:"لا يوجد عمال حالياً",
+noWorkerSubmissions:"العامل ليس لديه تسليمات",
+approved:"🟢 مقبول",
+rejected:"🔴 مرفوض",
+pending:"🟡 قيد المراجعة",
+paymentPaid:"🟢 تم الدفع ✓",
+paymentPending:"💵 قيد الحساب",
+adminNote:"ملاحظة الإدارة",
+paidAt:"💵 تم الدفع:",
+txtButton:"📄 ملف TXT",
+checkerButton:"🖼️ Checker",
+approve:"✅ قبول",
+reject:"❌ رفض",
+pay:"💵 دفع",
+delete:"🗑️ حذف",
+active:"نشط",
+disabled:"معطل",
+openAccount:"👤 فتح الحساب",
+disable:"🚪 تعطيل العامل",
+enable:"🔄 إعادة تفعيل العامل",
+valid:"Valid",
+locked:"Locked",
+confirmPayment:"تأكيد الدفع",
+confirmPaymentText:"هل أنت متأكد إنك دفعت هذه التسليمة؟",
+deleteSubmission:"حذف التسليمة",
+deleteSubmissionText:"تحذير: سيتم حذف التسليمة نهائياً. هل أنت متأكد؟",
+disableWorker:"تعطيل العامل",
+disableWorkerText:"هل تريد تعطيل حساب هذا العامل؟",
+enableWorker:"إعادة تفعيل العامل",
+enableWorkerText:"هل تريد إعادة تفعيل حساب هذا العامل؟",
+noCash:"غير مضاف",
+unknownError:"حدث خطأ",
+loginLoading:"جاري الدخول...",
+registerLoading:"جاري إنشاء الحساب...",
+uploadLoading:"جاري رفع التسليمة...",
+loginSuccess:"تم تسجيل الدخول بنجاح ✅",
+accountCreated:"تم إنشاء الحساب. لو طلب تأكيد الإيميل، أكده ثم سجل دخول.",
+accountDisabled:"هذا الحساب تم تعطيله بواسطة الإدارة.",
+profileError:"تعذر تحميل بيانات الحساب",
+cashRequired:"اكتب رقم الكاش أولاً",
+cashSaved:"تم حفظ رقم الكاش ✅",
+chooseTxt:"اختار ملف TXT",
+chooseChecker:"اختار صورة Checker",
+submissionSuccess:"تم إرسال التسليمة بنجاح ✅",
+submissionError:"حدث خطأ أثناء التسليم",
+alreadyReviewed:"التسليمة تمت مراجعتها بالفعل",
+approveConfirm:"هل تريد قبول هذه التسليمة؟",
+rejectReason:"اكتب سبب الرفض (اختياري):",
+approvedSuccess:"تم قبول التسليمة ✅",
+rejectedSuccess:"تم رفض التسليمة ❌",
+paymentSuccess:"تم تسجيل الدفع بنجاح 💵",
+deleteSuccess:"تم حذف التسليمة نهائياً 🗑️",
+workerEnabled:"تم إعادة تفعيل العامل 🔄",
+workerDisabled:"تم تعطيل العامل 🚪",
+logoutSuccess:"تم تسجيل الخروج 👋",
+fileError:"تعذر فتح الملف",
+signedUrlError:"تعذر إنشاء رابط الملف"
+},
+
+en:{
+headerSubtitle:"A place that matches your work 🖤",
+authSubtitle:"Your effort counts.. Your achievement matters 🖤",
+logout:"Logout",
+loginTab:"Login",
+registerTab:"Create Account",
+email:"Email",
+password:"Password",
+emailPlaceholder:"example@email.com",
+fullName:"Full Name",
+username:"Username",
+usernamePlaceholder:"username",
+cashNumber:"Cash Number",
+cashPlaceholder:"01xxxxxxxxx",
+loginButton:"Login",
+registerButton:"Create Account",
+welcome:"Welcome",
+save:"Save",
+todayValid:"Valid Today",
+todayLocked:"Locked Today",
+totalValid:"Total Valid",
+newSubmission:"Submit New Work",
+motivation:"Every submission gets you closer to your goal 🔥",
+validCount:"Valid Count",
+lockedCount:"Locked Count",
+txtFile:"TXT File",
+checkerImage:"Checker Image",
+submitWork:"Submit Work",
+mySubmissions:"My Submissions",
+mySubmissionsSubtitle:"All your work and review history",
+dashboard:"Dashboard",
+ownerDashboard:"Owner Dashboard 👑",
+ownerSubtitle:"Manage workers, submissions and payments",
+refresh:"🔄 Refresh",
+workers:"Workers",
+submissions:"Submissions",
+paid:"Paid",
+unpaid:"Pending Payment",
+chooseWorker:"Select a worker to view their work",
+selectedWorker:"Selected Worker",
+cashNumberLabel:"Cash Number:",
+workerWork:"Worker's Work",
+cancel:"Cancel",
+confirm:"Confirm",
+noSubmissions:"No submissions yet",
+noSubmissionsSubtitle:"Send your first submission and start working 🔥",
+noWorkers:"No workers currently",
+noWorkerSubmissions:"This worker has no submissions",
+approved:"🟢 Approved",
+rejected:"🔴 Rejected",
+pending:"🟡 Pending Review",
+paymentPaid:"🟢 Paid ✓",
+paymentPending:"💵 Pending Payment",
+adminNote:"Admin Note",
+paidAt:"💵 Paid:",
+txtButton:"📄 TXT File",
+checkerButton:"🖼️ Checker",
+approve:"✅ Approve",
+reject:"❌ Reject",
+pay:"💵 Pay",
+delete:"🗑️ Delete",
+active:"Active",
+disabled:"Disabled",
+openAccount:"👤 Open Account",
+disable:"🚪 Disable Worker",
+enable:"🔄 Enable Worker",
+valid:"Valid",
+locked:"Locked",
+confirmPayment:"Confirm Payment",
+confirmPaymentText:"Are you sure you paid this submission?",
+deleteSubmission:"Delete Submission",
+deleteSubmissionText:"Warning: this submission will be permanently deleted. Are you sure?",
+disableWorker:"Disable Worker",
+disableWorkerText:"Do you want to disable this worker account?",
+enableWorker:"Enable Worker",
+enableWorkerText:"Do you want to enable this worker account?",
+noCash:"Not added",
+unknownError:"An error occurred",
+loginLoading:"Logging in...",
+registerLoading:"Creating account...",
+uploadLoading:"Uploading submission...",
+loginSuccess:"Logged in successfully ✅",
+accountCreated:"Account created. If email confirmation is required, confirm your email and then log in.",
+accountDisabled:"This account has been disabled by the administration.",
+profileError:"Unable to load account information",
+cashRequired:"Enter the cash number first",
+cashSaved:"Cash number saved ✅",
+chooseTxt:"Choose a TXT file",
+chooseChecker:"Choose a Checker image",
+submissionSuccess:"Submission sent successfully ✅",
+submissionError:"An error occurred while submitting",
+alreadyReviewed:"This submission has already been reviewed",
+approveConfirm:"Do you want to approve this submission?",
+rejectReason:"Enter the rejection reason (optional):",
+approvedSuccess:"Submission approved ✅",
+rejectedSuccess:"Submission rejected ❌",
+paymentSuccess:"Payment recorded successfully 💵",
+deleteSuccess:"Submission permanently deleted 🗑️",
+workerEnabled:"Worker enabled 🔄",
+workerDisabled:"Worker disabled 🚪",
+logoutSuccess:"Logged out 👋",
+fileError:"Unable to open file",
+signedUrlError:"Unable to create file link"
+}
+
+};
+
+
+function t(key){
+return translations[lang]?.[key] ||
+       translations.ar[key] ||
+       key;
+}
+
+
+/* =========================================================
+   TRANSLATION
+========================================================= */
+
+function applyTranslations(){
+
+document.documentElement.lang = lang;
+document.documentElement.dir =
+lang === "ar" ? "rtl" : "ltr";
+
+document.querySelectorAll("[data-i18n]")
+.forEach(el=>{
+el.textContent =
+t(el.getAttribute("data-i18n"));
+});
+
+document.querySelectorAll("[data-i18n-placeholder]")
+.forEach(el=>{
+el.placeholder =
+t(el.getAttribute("data-i18n-placeholder"));
+});
+
+const languageBtn =
+document.getElementById("languageBtn");
+
+if(languageBtn)
+languageBtn.textContent =
+lang === "ar" ? "EN" : "عربي";
+
+const logoutBtn =
+document.getElementById("logoutBtn");
+
+if(logoutBtn)
+logoutBtn.textContent = t("logout");
+
+if(currentProfile?.role === "worker"){
+renderWorkerProfile();
+renderWorkerStats();
+renderWorkerSubmissions();
+}
+
+if(currentProfile?.role === "owner"){
+renderOwnerStats();
+renderWorkers();
+
+if(selectedWorker){
+renderSelectedWorkerHeader();
+renderSelectedWorkerSubmissions();
+}
+}
+
+}
+
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+function toggleLanguage(){
+
+lang =
+lang === "ar" ? "en" : "ar";
+
+localStorage.setItem(
+"elbob_language",
+lang
+);
+
+applyTranslations();
+
+}
+
+
+/* =========================================================
+   THEME
+========================================================= */
+
+function applyTheme(){
+
+if(theme === "dark")
+document.documentElement.classList.add("dark");
+else
+document.documentElement.classList.remove("dark");
+
+const btn =
+document.getElementById("themeBtn");
+
+if(btn)
+btn.textContent =
+theme === "dark" ? "☀️" : "🌙";
+
+}
+
+
+function toggleTheme(){
+
+theme =
+theme === "dark" ? "light" : "dark";
+
+localStorage.setItem(
+"elbob_theme",
+theme
+);
+
+applyTheme();
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function toast(message,type="info"){
+
+const container =
+document.getElementById("toastContainer");
+
+if(!container)return;
+
+const item =
+document.createElement("div");
+
+let cls =
+"bg-slate-900 text-white";
+
+if(type === "success")
+cls = "bg-emerald-600 text-white";
+
+if(type === "error")
+cls = "bg-red-600 text-white";
+
+if(type === "warning")
+cls = "bg-yellow-500 text-black";
+
+item.className =
+`toast ${cls} px-5 py-3 rounded-2xl shadow-xl max-w-sm font-bold text-sm`;
+
+item.textContent = message;
+
+container.appendChild(item);
+
+setTimeout(()=>item.remove(),3500);
+
+}
+
+
+/* =========================================================
+   AUTH MODE
+========================================================= */
+
+function showAuthMode(mode){
+
+const login =
+document.getElementById("loginForm");
+
+const register =
+document.getElementById("registerForm");
+
+const loginTab =
+document.getElementById("loginTab");
+
+const registerTab =
+document.getElementById("registerTab");
+
+if(mode === "login"){
+
+login.classList.remove("hidden-view");
+register.classList.add("hidden-view");
+
+loginTab.className =
+"py-3 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-bold";
+
+registerTab.className =
+"py-3 rounded-2xl bg-slate-100 dark:bg-white/5 font-bold";
+
+}else{
+
+login.classList.add("hidden-view");
+register.classList.remove("hidden-view");
+
+registerTab.className =
+"py-3 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-bold";
+
+loginTab.className =
+"py-3 rounded-2xl bg-slate-100 dark:bg-white/5 font-bold";
+
+}
+
+}
+
+
+/* =========================================================
+   VIEWS
+========================================================= */
+
+function hideAllViews(){
+
+document.getElementById("authView")
+.classList.add("hidden-view");
+
+document.getElementById("workerView")
+.classList.add("hidden-view");
+
+document.getElementById("ownerView")
+.classList.add("hidden-view");
+
+}
+
+
+function showAuth(){
+
+stopWorkerRefresh();
+
+hideAllViews();
+
+document.getElementById("authView")
+.classList.remove("hidden-view");
+
+document.getElementById("logoutBtn")
+.classList.add("hidden");
+
+}
+
+
+function showLoggedInHeader(){
+
+document.getElementById("logoutBtn")
+.classList.remove("hidden");
+
+}
+
+
+/* =========================================================
+   SESSION
+========================================================= */
+
+async function checkExistingSession(){
+
+try{
+
+const {data,error} =
+await db.auth.getSession();
+
+if(error)
+throw error;
+
+if(!data.session){
+
+showAuth();
+return;
+
+}
+
+currentUser =
+data.session.user;
+
+await enterApplication();
+
+}catch(error){
+
+console.error(error);
+
+toast(
+error.message || t("unknownError"),
+"error"
+);
+
+showAuth();
+
+}
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+async function login(event){
+
+event.preventDefault();
+
+const email =
+document.getElementById("loginEmail")
+.value.trim();
+
+const password =
+document.getElementById("loginPassword")
+.value;
+
+const button =
+document.getElementById("loginSubmit");
+
+button.disabled = true;
+
+button.innerHTML =
+`<span class="inline-flex items-center gap-2">
+<span class="loader"></span>
+${t("loginLoading")}
+</span>`;
+
+try{
+
+const {data,error} =
+await db.auth.signInWithPassword({
+email,
+password
+});
+
+if(error)
+throw error;
+
+currentUser = data.user;
+
+toast(t("loginSuccess"),"success");
+
+await enterApplication();
+
+}catch(error){
+
+console.error(error);
+
+toast(
+error.message || t("unknownError"),
+"error"
+);
+
+}finally{
+
+button.disabled = false;
+button.textContent = t("loginButton");
+
+}
+
+}
+
+
+/* =========================================================
+   REGISTER
+========================================================= */
+
+async function register(event){
+
+event.preventDefault();
+
+const full_name =
+document.getElementById("regName")
+.value.trim();
+
+const username =
+document.getElementById("regUsername")
+.value.trim();
+
+const cash_number =
+document.getElementById("regCash")
+.value.trim();
+
+const email =
+document.getElementById("regEmail")
+.value.trim();
+
+const password =
+document.getElementById("regPassword")
+.value;
+
+const button =
+document.getElementById("registerSubmit");
+
+button.disabled = true;
+
+button.innerHTML =
+`<span class="inline-flex items-center gap-2">
+<span class="loader"></span>
+${t("registerLoading")}
+</span>`;
+
+try{
+
+const {data,error} =
+await db.auth.signUp({
+
+email,
+password,
+
+options:{
+data:{
+full_name,
+username,
+cash_number
+}
+}
+
+});
+
+if(error)
+throw error;
+
+if(data.session){
+
+currentUser = data.user;
+
+await enterApplication();
+
+}else{
+
+toast(
+t("accountCreated"),
+"success"
+);
+
+showAuthMode("login");
+
+}
+
+}catch(error){
+
+console.error(error);
+
+toast(
+error.message || t("unknownError"),
+"error"
+);
+
+}finally{
+
+button.disabled = false;
+button.textContent =
+t("registerButton");
+
+}
+
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+async function loadProfile(){
+
+try{
+
+const {data,error} =
+await db.rpc("get_my_profile");
+
+if(!error && data){
+
+currentProfile = data;
+return true;
+
+}
+
+const result =
+await db
+.from("profiles")
+.select("*")
+.eq("id",currentUser.id)
+.maybeSingle();
+
+if(result.error)
+throw result.error;
+
+currentProfile = result.data;
+
+return !!currentProfile;
+
+}catch(error){
+
+console.error(error);
+
+toast(
+error.message || t("profileError"),
+"error"
+);
+
+return false;
+
+}
+
+}
+
+
+/* =========================================================
+   ENTER APPLICATION
+========================================================= */
+
+async function enterApplication(){
+
+const ok =
+await loadProfile();
+
+if(!ok){
+
+await db.auth.signOut();
+
+currentUser = null;
+currentProfile = null;
+
+showAuth();
+return;
+
+}
+
+if(currentProfile.active === false){
+
+toast(
+t("accountDisabled"),
+"error"
+);
+
+await db.auth.signOut();
+
+currentUser = null;
+currentProfile = null;
+
+showAuth();
+return;
+
+}
+
+showLoggedInHeader();
+
+if(currentProfile.role === "owner")
+await showOwner();
+else
+await showWorker();
+
+}
+
+
+/* =========================================================
+   WORKER
+========================================================= */
+
+async function showWorker(){
+
+hideAllViews();
+
+document.getElementById("workerView")
+.classList.remove("hidden-view");
+
+renderWorkerProfile();
+
+await loadWorkerSubmissions();
+
+startWorkerRefresh();
+
+}
+
+
+function renderWorkerProfile(){
+
+if(!currentProfile)
+return;
+
+const name =
+currentProfile.full_name || "-";
+
+const username =
+currentProfile.username || "-";
+
+document.getElementById("workerName")
+.textContent = name;
+
+document.getElementById("workerUsername")
+.textContent = "@" + username;
+
+document.getElementById("accountName")
+.textContent = name;
+
+document.getElementById("accountUsername")
+.textContent = username;
+
+document.getElementById("cashInput")
+.value =
+currentProfile.cash_number || "";
+
+}
+
+
+/* =========================================================
+   SAVE CASH
+========================================================= */
+
+async function saveCash(){
+
+const cash =
+document.getElementById("cashInput")
+.value.trim();
+
+if(!cash){
+
+toast(t("cashRequired"),"warning");
+return;
+
+}
+
+const {error} =
+await db
+.from("profiles")
+.update({
+cash_number:cash
+})
+.eq("id",currentUser.id);
+
+if(error){
+
+toast(error.message,"error");
+return;
+
+}
+
+currentProfile.cash_number = cash;
+
+toast(t("cashSaved"),"success");
+
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+function cairoDateKey(value){
+
+    const date = value ? new Date(value) : new Date();
+
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Africa/Cairo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        hourCycle: "h23"
+    }).formatToParts(date);
+
+    const get = (type) =>
+        Number(
+            parts.find(p => p.type === type)?.value || 0
+        );
+
+    let year = get("year");
+    let month = get("month");
+    let day = get("day");
+    const hour = get("hour");
+
+    // اليوم يبدأ الساعة 3:00 صباحًا
+    // من 00:00 إلى 02:59 يتحسب على اليوم السابق
+    if (hour < 3) {
+
+        const previousDay = new Date(
+            Date.UTC(year, month - 1, day)
+        );
+
+        previousDay.setUTCDate(
+            previousDay.getUTCDate() - 1
+        );
+
+        year = previousDay.getUTCFullYear();
+        month = previousDay.getUTCMonth() + 1;
+        day = previousDay.getUTCDate();
+    }
+
+    return [
+        String(year),
+        String(month).padStart(2, "0"),
+        String(day).padStart(2, "0")
+    ].join("-");
+}
+
+/* =========================================================
+   LOAD WORKER SUBMISSIONS
+========================================================= */
+
+async function loadWorkerSubmissions(){
+
+if(!currentUser)
+return;
+
+const {data,error} =
+await db
+.from("submissions")
+.select("*")
+.eq("worker_id",currentUser.id)
+.order("created_at",{ascending:false});
+
+if(error){
+
+toast(error.message,"error");
+return;
+
+}
+
+submissions = data || [];
+
+renderWorkerStats();
+renderWorkerSubmissions();
+
+}
+
+
+/* =========================================================
+   REFRESH
+========================================================= */
+
+function startWorkerRefresh(){
+
+stopWorkerRefresh();
+
+workerRefreshTimer =
+setInterval(
+async()=>{
+if(currentUser &&
+currentProfile?.role === "worker"){
+await loadWorkerSubmissions();
+}
+},
+30000
+);
+
+}
+
+
+function stopWorkerRefresh(){
+
+if(workerRefreshTimer){
+
+clearInterval(workerRefreshTimer);
+
+workerRefreshTimer = null;
+
+}
+
+}
+
+
+/* =========================================================
+   WORKER STATS
+========================================================= */
+
+function renderWorkerStats(){
+
+const todayKey =
+cairoDateKey();
+
+let todayValid = 0;
+let todayLocked = 0;
+let totalValid = 0;
+
+submissions.forEach(row=>{
+
+const valid =
+Number(row.valid_count || 0);
+
+const locked =
+Number(row.locked_count || 0);
+
+const rowDay =
+cairoDateKey(row.created_at);
+
+if(rowDay === todayKey){
+
+todayValid += valid;
+todayLocked += locked;
+
+}
+
+if(
+row.status !== "rejected" &&
+row.payment_status !== "paid"
+){
+
+totalValid += valid;
+
+}
+
+});
+
+const a =
+document.getElementById("todayValid");
+
+const b =
+document.getElementById("todayLocked");
+
+const c =
+document.getElementById("totalValid");
+
+if(a)a.textContent = todayValid;
+if(b)b.textContent = todayLocked;
+if(c)c.textContent = totalValid;
+
+}
+
+
+/* =========================================================
+   STATUS BADGE
+========================================================= */
+
+function statusBadge(status){
+
+if(status === "approved"){
+
+return `
+<span class="inline-flex px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 text-xs font-black">
+${t("approved")}
+</span>
+`;
+
+}
+
+if(status === "rejected"){
+
+return `
+<span class="inline-flex px-3 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-300 text-xs font-black">
+${t("rejected")}
+</span>
+`;
+
+}
+
+return `
+<span class="inline-flex px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-300 text-xs font-black">
+${t("pending")}
+</span>
+`;
+
+}
+
+
+/* =========================================================
+   PAYMENT BADGE
+========================================================= */
+
+function paymentBadge(row){
+
+if(row.payment_status === "paid"){
+
+return `
+<span class="inline-flex px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 text-xs font-black">
+${t("paymentPaid")}
+</span>
+`;
+
+}
+
+if(row.status === "approved"){
+
+return `
+<span class="inline-flex px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-300 text-xs font-black">
+${t("paymentPending")}
+</span>
+`;
+
+}
+
+return "";
+
+}
+
+
+/* =========================================================
+   WORKER SUBMISSIONS
+========================================================= */
+
+function renderWorkerSubmissions(){
+
+const container =
+document.getElementById("workerSubmissions");
+
+if(!container)
+return;
+
+if(!submissions.length){
+
+container.innerHTML = `
+<div class="text-center py-14 rounded-3xl border border-dashed border-slate-300 dark:border-white/10">
+
+<div class="text-4xl mb-3">📦</div>
+
+<p class="font-black">${t("noSubmissions")}</p>
+
+<p class="text-sm text-slate-500 mt-1">
+${t("noSubmissionsSubtitle")}
+</p>
+
+</div>
+`;
+
+return;
+
+}
+
+container.innerHTML =
+submissions.map(row=>{
+
+const date =
+formatDate(row.created_at);
+
+const paidDate =
+row.paid_at
+? formatDate(row.paid_at)
+: "";
+
+return `
+
+<div class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 card-hover">
+
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+
+<div>
+
+<div class="flex flex-wrap items-center gap-2">
+
+${statusBadge(row.status)}
+${paymentBadge(row)}
+
+</div>
+
+<p class="text-xs text-slate-500 mt-3">
+📅 ${date}
+</p>
+
+</div>
+
+<div class="grid grid-cols-2 gap-3">
+
+<div class="px-4 py-3 rounded-2xl bg-emerald-500/10">
+
+<p class="text-xs text-emerald-600 dark:text-emerald-300">
+${t("valid")}
+</p>
+
+<p class="text-xl font-black">
+${Number(row.valid_count || 0)}
+</p>
+
+</div>
+
+<div class="px-4 py-3 rounded-2xl bg-yellow-500/10">
+
+<p class="text-xs text-yellow-600 dark:text-yellow-300">
+${t("locked")}
+</p>
+
+<p class="text-xl font-black">
+${Number(row.locked_count || 0)}
+</p>
+
+</div>
+
+</div>
+</div>
+
+${
+row.owner_note
+?
+`
+<div class="mt-4 rounded-2xl bg-slate-100 dark:bg-black/25 p-4">
+
+<p class="text-xs text-slate-500 mb-1">
+${t("adminNote")}
+</p>
+
+<p class="font-bold">
+${escapeHtml(row.owner_note)}
+</p>
+
+</div>
+`
+:""
+}
+
+${
+paidDate
+?
+`
+<p class="text-xs text-emerald-600 dark:text-emerald-300 mt-4">
+${t("paidAt")} ${paidDate}
+</p>
+`
+:""
+}
+
+<div class="flex flex-wrap gap-2 mt-5">
+
+${
+row.work_file
+?
+`
+<button
+onclick="openStorageFile('work-files','${encodeURIComponent(row.work_file)}')"
+class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-white/10 font-bold text-sm">
+${t("txtButton")}
+</button>
+`
+:""
+}
+
+${
+row.proof_image
+?
+`
+<button
+onclick="openStorageFile('proofs','${encodeURIComponent(row.proof_image)}')"
+class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-white/10 font-bold text-sm">
+${t("checkerButton")}
+</button>
+`
+:""
+}
+
+</div>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+
+/* =========================================================
+   SUBMIT WORK
+========================================================= */
+
+async function submitWork(event){
+
+event.preventDefault();
+
+const valid =
+Math.max(
+0,
+Number(
+document.getElementById("validCount").value
+)
+);
+
+const locked =
+Math.max(
+0,
+Number(
+document.getElementById("lockedCount").value
+)
+);
+
+const workFile =
+document.getElementById("workFile").files[0];
+
+const proofFile =
+document.getElementById("proofFile").files[0];
+
+if(!workFile){
+
+toast(t("chooseTxt"),"warning");
+return;
+
+}
+
+if(!proofFile){
+
+toast(t("chooseChecker"),"warning");
+return;
+
+}
+
+const button =
+document.getElementById("submitWorkBtn");
+
+button.disabled = true;
+
+button.innerHTML =
+`<span class="inline-flex items-center gap-2">
+<span class="loader"></span>
+${t("uploadLoading")}
+</span>`;
+
+try{
+
+const id =
+crypto.randomUUID();
+
+const extension =
+getFileExtension(proofFile.name) || "png";
+
+const workPath =
+`${currentUser.id}/${id}.txt`;
+
+const proofPath =
+`${currentUser.id}/${id}.${extension}`;
+
+const workUpload =
+await db.storage
+.from("work-files")
+.upload(
+workPath,
+workFile,
+{
+contentType:"text/plain",
+upsert:false
+}
+);
+
+if(workUpload.error)
+throw workUpload.error;
+
+const proofUpload =
+await db.storage
+.from("proofs")
+.upload(
+proofPath,
+proofFile,
+{
+contentType:proofFile.type,
+upsert:false
+}
+);
+
+if(proofUpload.error)
+throw proofUpload.error;
+
+const {error} =
+await db.rpc(
+"create_submission",
+{
+p_valid_count:valid,
+p_locked_count:locked,
+p_work_file:workPath,
+p_proof_image:proofPath
+}
+);
+
+if(error)
+throw error;
+
+toast(
+t("submissionSuccess"),
+"success"
+);
+
+document.getElementById("submissionForm").reset();
+
+document.getElementById("validCount").value = 0;
+document.getElementById("lockedCount").value = 0;
+
+await loadWorkerSubmissions();
+
+}catch(error){
+
+console.error(error);
+
+toast(
+error.message || t("submissionError"),
+"error"
+);
+
+}finally{
+
+button.disabled = false;
+button.textContent =
+t("submitWork");
+
+}
+
+}
+
+
+/* =========================================================
+   OWNER
+========================================================= */
+
+async function showOwner(){
+
+hideAllViews();
+
+document.getElementById("ownerView")
+.classList.remove("hidden-view");
+
+await loadOwnerData();
+
+}
+
+
+async function loadOwnerData(){
+
+const workersResult =
+await db
+.from("profiles")
+.select("*")
+.eq("role","worker")
+.order("created_at",{ascending:false});
+
+if(workersResult.error){
+
+toast(
+workersResult.error.message,
+"error"
+);
+
+return;
+
+}
+
+profiles =
+workersResult.data || [];
+
+const submissionsResult =
+await db
+.from("submissions")
+.select("*")
+.order("created_at",{ascending:false});
+
+if(submissionsResult.error){
+
+toast(
+submissionsResult.error.message,
+"error"
+);
+
+return;
+
+}
+
+submissions =
+submissionsResult.data || [];
+
+renderOwnerStats();
+renderWorkers();
+
+if(selectedWorker){
+
+const refreshed =
+profiles.find(
+p=>p.id === selectedWorker.id
+);
+
+if(refreshed){
+
+selectedWorker = refreshed;
+
+await openWorker(refreshed.id);
+
+}else{
+
+selectedWorker = null;
+
+document.getElementById(
+"selectedWorkerSection"
+).classList.add("hidden-view");
+
+}
+
+}
+
+}
+
+
+/* =========================================================
+   OWNER STATS
+========================================================= */
+
+function renderOwnerStats(){
+
+const paid =
+submissions.filter(
+s=>s.payment_status === "paid"
+).length;
+
+const unpaid =
+submissions.filter(
+s=>
+s.status === "approved" &&
+s.payment_status !== "paid"
+).length;
+
+document.getElementById(
+"ownerWorkersCount"
+).textContent =
+profiles.length;
+
+document.getElementById(
+"ownerSubmissionsCount"
+).textContent =
+submissions.length;
+
+document.getElementById(
+"ownerPaidCount"
+).textContent =
+paid;
+
+document.getElementById(
+"ownerUnpaidCount"
+).textContent =
+unpaid;
+
+}
+
+
+/* =========================================================
+   WORKERS
+========================================================= */
+
+function renderWorkers(){
+
+const container =
+document.getElementById("workersGrid");
+
+if(!profiles.length){
+
+container.innerHTML = `
+<div class="md:col-span-2 xl:col-span-3 text-center py-14 rounded-3xl border border-dashed border-slate-300 dark:border-white/10">
+
+<div class="text-4xl mb-3">👥</div>
+
+<p class="font-black">${t("noWorkers")}</p>
+
+</div>
+`;
+
+return;
+
+}
+
+container.innerHTML =
+profiles.map(worker=>{
+
+const workerSubs =
+submissions.filter(
+s=>s.worker_id === worker.id
+);
+
+const approved =
+workerSubs.filter(
+s=>s.status === "approved"
+);
+
+const valid =
+approved.reduce(
+(sum,s)=>
+sum + Number(s.valid_count || 0),
+0
+);
+
+const locked =
+approved.reduce(
+(sum,s)=>
+sum + Number(s.locked_count || 0),
+0
+);
+
+const unpaid =
+approved.filter(
+s=>s.payment_status !== "paid"
+).length;
+
+return `
+
+<div class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 card-hover">
+
+<div class="flex items-start justify-between gap-3">
+
+<div class="flex items-center gap-3">
+
+<div class="w-12 h-12 rounded-2xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-black text-xl">
+${escapeHtml(
+(worker.full_name || "?").charAt(0)
+)}
+</div>
+
+<div>
+
+<h4 class="font-black">
+${escapeHtml(worker.full_name || "-")}
+</h4>
+
+<p class="text-xs text-slate-500 mt-1">
+@${escapeHtml(worker.username || "-")}
+</p>
+
+</div>
+</div>
+
+${
+worker.active
+?
+`<span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 text-xs font-black">${t("active")}</span>`
+:
+`<span class="px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-300 text-xs font-black">${t("disabled")}</span>`
+}
+
+</div>
+
+<div class="grid grid-cols-3 gap-2 mt-5">
+
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 p-3">
+
+<p class="text-[11px] text-slate-500">
+${t("valid")}
+</p>
+
+<p class="font-black mt-1">${valid}</p>
+
+</div>
+
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 p-3">
+
+<p class="text-[11px] text-slate-500">
+${t("locked")}
+</p>
+
+<p class="font-black mt-1">${locked}</p>
+
+</div>
+
+<div class="rounded-2xl bg-yellow-500/10 p-3">
+
+<p class="text-[11px] text-yellow-600 dark:text-yellow-300">
+${t("unpaid")}
+</p>
+
+<p class="font-black mt-1">${unpaid}</p>
+
+</div>
+
+</div>
+
+<div class="flex gap-2 mt-4">
+
+<button
+onclick="openWorker('${worker.id}')"
+class="flex-1 py-3 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-black text-sm">
+${t("openAccount")}
+</button>
+
+<button
+onclick="confirmToggleWorker('${worker.id}')"
+class="px-4 py-3 rounded-2xl ${
+worker.active
+? "bg-red-500/10 text-red-500"
+: "bg-emerald-500/10 text-emerald-600"
+} font-black text-sm">
+${worker.active ? "🚪" : "🔄"}
+</button>
+
+</div>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+
+/* =========================================================
+   OPEN WORKER
+========================================================= */
+
+async function openWorker(workerId){
+
+const worker =
+profiles.find(
+p=>p.id === workerId
+);
+
+if(!worker)
+return;
+
+selectedWorker = worker;
+
+selectedWorkerSubmissions =
+submissions
+.filter(
+s=>s.worker_id === workerId
+)
+.sort(
+(a,b)=>
+new Date(b.created_at) -
+new Date(a.created_at)
+);
+
+document.getElementById(
+"selectedWorkerSection"
+).classList.remove("hidden-view");
+
+renderSelectedWorkerHeader();
+renderSelectedWorkerSubmissions();
+
+}
+
+
+/* =========================================================
+   SELECTED WORKER
+========================================================= */
+
+function renderSelectedWorkerHeader(){
+
+if(!selectedWorker)
+return;
+
+const worker = selectedWorker;
+
+document.getElementById(
+"selectedWorkerName"
+).textContent =
+worker.full_name || "-";
+
+document.getElementById(
+"selectedWorkerUsername"
+).textContent =
+"@" + (worker.username || "-");
+
+document.getElementById(
+"selectedCash"
+).textContent =
+worker.cash_number || t("noCash");
+
+const approved =
+selectedWorkerSubmissions.filter(
+s=>s.status === "approved"
+);
+
+const valid =
+approved.reduce(
+(sum,s)=>
+sum + Number(s.valid_count || 0),
+0
+);
+
+const locked =
+approved.reduce(
+(sum,s)=>
+sum + Number(s.locked_count || 0),
+0
+);
+
+const paid =
+approved.filter(
+s=>s.payment_status === "paid"
+).length;
+
+const unpaid =
+approved.filter(
+s=>s.payment_status !== "paid"
+).length;
+
+document.getElementById("selectedValid")
+.textContent = valid;
+
+document.getElementById("selectedLocked")
+.textContent = locked;
+
+document.getElementById("selectedPaid")
+.textContent = paid;
+
+document.getElementById("selectedUnpaid")
+.textContent = unpaid;
+
+const toggle =
+document.getElementById("toggleWorkerBtn");
+
+if(worker.active){
+
+toggle.textContent = t("disable");
+
+toggle.className =
+"px-4 py-3 rounded-2xl bg-red-500/10 text-red-500 font-black";
+
+}else{
+
+toggle.textContent = t("enable");
+
+toggle.className =
+"px-4 py-3 rounded-2xl bg-emerald-500/10 text-emerald-600 font-black";
+
+}
+
+}
+
+
+/* =========================================================
+   OWNER SUBMISSIONS
+========================================================= */
+
+function renderSelectedWorkerSubmissions(){
+
+const container =
+document.getElementById(
+"selectedWorkerSubmissions"
+);
+
+if(!selectedWorkerSubmissions.length){
+
+container.innerHTML = `
+<div class="text-center py-14 rounded-3xl border border-dashed border-slate-300 dark:border-white/10">
+
+<div class="text-4xl mb-3">📦</div>
+
+<p class="font-black">
+${t("noWorkerSubmissions")}
+</p>
+
+</div>
+`;
+
+return;
+
+}
+
+container.innerHTML =
+selectedWorkerSubmissions.map(row=>{
+
+const date =
+formatDate(row.created_at);
+
+const paidDate =
+row.paid_at
+? formatDate(row.paid_at)
+: "";
+
+return `
+
+<div class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5">
+
+<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-5">
+
+<div class="flex-1">
+
+<div class="flex flex-wrap gap-2">
+
+${statusBadge(row.status)}
+${paymentBadge(row)}
+
+</div>
+
+<p class="text-xs text-slate-500 mt-3">
+📅 ${date}
+</p>
+
+<div class="grid grid-cols-2 gap-3 mt-4 max-w-sm">
+
+<div class="rounded-2xl bg-emerald-500/10 p-4">
+
+<p class="text-xs text-emerald-600 dark:text-emerald-300">
+${t("valid")}
+</p>
+
+<p class="text-2xl font-black mt-1">
+${Number(row.valid_count || 0)}
+</p>
+
+</div>
+
+<div class="rounded-2xl bg-yellow-500/10 p-4">
+
+<p class="text-xs text-yellow-600 dark:text-yellow-300">
+${t("locked")}
+</p>
+
+<p class="text-2xl font-black mt-1">
+${Number(row.locked_count || 0)}
+</p>
+
+</div>
+
+</div>
+
+${
+row.owner_note
+?
+`
+<div class="mt-4 rounded-2xl bg-slate-100 dark:bg-black/25 p-4">
+
+<p class="text-xs text-slate-500">
+${t("adminNote")}
+</p>
+
+<p class="font-bold mt-1">
+${escapeHtml(row.owner_note)}
+</p>
+
+</div>
+`
+:""
+}
+
+${
+paidDate
+?
+`
+<p class="text-xs text-emerald-600 dark:text-emerald-300 mt-4">
+${t("paidAt")} ${paidDate}
+</p>
+`
+:""
+}
+
+</div>
+
+<div class="flex flex-wrap gap-2 lg:max-w-md lg:justify-end">
+
+${
+row.work_file
+?
+`
+<button
+onclick="openStorageFile('work-files','${encodeURIComponent(row.work_file)}')"
+class="px-4 py-3 rounded-2xl bg-slate-100 dark:bg-white/10 font-bold text-sm">
+${t("txtButton")}
+</button>
+`
+:""
+}
+
+${
+row.proof_image
+?
+`
+<button
+onclick="openStorageFile('proofs','${encodeURIComponent(row.proof_image)}')"
+class="px-4 py-3 rounded-2xl bg-slate-100 dark:bg-white/10 font-bold text-sm">
+${t("checkerButton")}
+</button>
+`
+:""
+}
+
+${
+row.status === "pending"
+?
+`
+<button
+onclick="reviewSubmission('${row.id}','approved')"
+class="px-4 py-3 rounded-2xl bg-emerald-600 text-white font-black text-sm">
+${t("approve")}
+</button>
+
+<button
+onclick="reviewSubmission('${row.id}','rejected')"
+class="px-4 py-3 rounded-2xl bg-red-600 text-white font-black text-sm">
+${t("reject")}
+</button>
+`
+:""
+}
+
+${
+row.status === "approved" &&
+row.payment_status !== "paid"
+?
+`
+<button
+onclick="confirmPayment('${row.id}')"
+class="px-4 py-3 rounded-2xl bg-blue-600 text-white font-black text-sm">
+${t("pay")}
+</button>
+`
+:""
+}
+
+<button
+onclick="confirmDeleteSubmission('${row.id}')"
+class="px-4 py-3 rounded-2xl bg-red-500/10 text-red-500 font-black text-sm">
+${t("delete")}
+</button>
+
+</div>
+
+</div>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+
+/* =========================================================
+   REVIEW
+========================================================= */
+
+async function reviewSubmission(id,status){
+
+const row =
+submissions.find(
+s=>s.id === id
+);
+
+if(!row)
+return;
+
+if(row.status !== "pending"){
+
+toast(
+t("alreadyReviewed"),
+"warning"
+);
+
+return;
+
+}
+
+let note = "";
+
+if(status === "rejected"){
+
+note =
+prompt(t("rejectReason"));
+
+if(note === null)
+note = "";
+
+}
+
+if(status === "approved"){
+
+if(!confirm(t("approveConfirm")))
+return;
+
+}
+
+const {error} =
+await db
+.from("submissions")
+.update({
+status,
+owner_note:
+note.trim() ? note.trim() : null,
+reviewed_by:currentUser.id,
+reviewed_at:new Date().toISOString()
+})
+.eq("id",id);
+
+if(error){
+
+toast(error.message,"error");
+return;
+
+}
+
+toast(
+status === "approved"
+? t("approvedSuccess")
+: t("rejectedSuccess"),
+"success"
+);
+
+await loadOwnerData();
+
+}
+
+
+/* =========================================================
+   PAYMENT
+========================================================= */
+
+function confirmPayment(id){
+
+const row =
+submissions.find(
+s=>s.id === id
+);
+
+if(!row)
+return;
+
+openModal(
+t("confirmPayment"),
+t("confirmPaymentText"),
+async()=>{
+
+const {error} =
+await db.rpc(
+"mark_submission_paid",
+{
+p_submission_id:id
+}
+);
+
+if(error){
+
+toast(error.message,"error");
+return;
+
+}
+
+toast(
+t("paymentSuccess"),
+"success"
+);
+
+await loadOwnerData();
+
+}
+);
+
+}
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+function confirmDeleteSubmission(id){
+
+const row =
+submissions.find(
+s=>s.id === id
+);
+
+if(!row)
+return;
+
+openModal(
+t("deleteSubmission"),
+t("deleteSubmissionText"),
+async()=>{
+
+const {error} =
+await db.rpc(
+"delete_submission",
+{
+p_submission_id:id
+}
+);
+
+if(error){
+
+toast(error.message,"error");
+return;
+
+}
+
+toast(
+t("deleteSuccess"),
+"success"
+);
+
+await loadOwnerData();
+
+}
+);
+
+}
+
+
+/* =========================================================
+   WORKER ACTIVE
+========================================================= */
+
+function confirmToggleWorker(workerId){
+
+const worker =
+profiles.find(
+p=>p.id === workerId
+);
+
+if(!worker)
+return;
+
+const name =
+worker.full_name ||
+worker.username ||
+"-";
+
+if(worker.active){
+
+openModal(
+t("disableWorker"),
+`${t("disableWorkerText")}\n${name}`,
+async()=>{
+await setWorkerActive(
+workerId,
+false
+);
+}
+);
+
+}else{
+
+openModal(
+t("enableWorker"),
+`${t("enableWorkerText")}\n${name}`,
+async()=>{
+await setWorkerActive(
+workerId,
+true
+);
+}
+);
+
+}
+
+}
+
+
+function toggleSelectedWorker(){
+
+if(!selectedWorker)
+return;
+
+confirmToggleWorker(
+selectedWorker.id
+);
+
+}
+
+
+async function setWorkerActive(workerId,active){
+
+const functionName =
+active
+? "enable_worker"
+: "disable_worker";
+
+const {error} =
+await db.rpc(
+functionName,
+{
+p_worker_id:workerId
+}
+);
+
+if(error){
+
+toast(error.message,"error");
+return;
+
+}
+
+toast(
+active
+? t("workerEnabled")
+: t("workerDisabled"),
+"success"
+);
+
+await loadOwnerData();
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+function openModal(title,text,action){
+
+document.getElementById(
+"modalTitle"
+).textContent = title;
+
+document.getElementById(
+"modalText"
+).textContent = text;
+
+modalAction = action;
+
+document.getElementById(
+"confirmModal"
+).classList.remove("hidden-view");
+
+document.getElementById(
+"confirmBtn"
+).textContent = t("confirm");
+
+document.getElementById(
+"confirmBtn"
+).onclick = async()=>{
+
+const fn = modalAction;
+
+closeModal();
+
+if(fn)
+await fn();
+
+};
+
+}
+
+
+function closeModal(){
+
+document.getElementById(
+"confirmModal"
+).classList.add("hidden-view");
+
+modalAction = null;
+
+}
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+async function openStorageFile(bucket,encodedPath){
+
+try{
+
+const path =
+decodeURIComponent(encodedPath);
+
+const {data,error} =
+await db.storage
+.from(bucket)
+.createSignedUrl(
+path,
+600
+);
+
+if(error)
+throw error;
+
+if(!data?.signedUrl)
+throw new Error(t("signedUrlError"));
+
+window.open(
+data.signedUrl,
+"_blank"
+);
+
+}catch(error){
+
+console.error(error);
+
+toast(
+error.message || t("fileError"),
+"error"
+);
+
+}
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logout(){
+
+stopWorkerRefresh();
+
+await db.auth.signOut();
+
+currentUser = null;
+currentProfile = null;
+submissions = [];
+profiles = [];
+selectedWorker = null;
+selectedWorkerSubmissions = [];
+
+showAuth();
+
+document.getElementById(
+"loginForm"
+).reset();
+
+toast(
+t("logoutSuccess"),
+"success"
+);
+
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function formatDate(value){
+
+if(!value)
+return "-";
+
+return new Date(value)
+.toLocaleString(
+lang === "ar" ? "ar-EG" : "en-US",
+{
+timeZone:"Africa/Cairo",
+year:"numeric",
+month:"2-digit",
+day:"2-digit",
+hour:"2-digit",
+minute:"2-digit"
+}
+);
+
+}
+
+
+function getFileExtension(name){
+
+if(!name)
+return "";
+
+const parts =
+name.split(".");
+
+if(parts.length < 2)
+return "";
+
+return parts
+.pop()
+.toLowerCase()
+.replace(
+/[^a-z0-9]/g,
+""
+);
+
+}
+
+
+function escapeHtml(value){
+
+if(value === null || value === undefined)
+return "";
+
+return String(value)
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+document.addEventListener(
+"DOMContentLoaded",
+async()=>{
+
+applyTheme();
+
+applyTranslations();
+
+showAuthMode("login");
+
+await checkExistingSession();
+
+}
+);
+
+
+document.getElementById(
+"confirmModal"
+).addEventListener(
+"click",
+function(event){
+
+if(event.target === this)
+closeModal();
+
+}
+);
+
+</script>
+
+</body>
+</html>
