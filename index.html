@@ -926,7 +926,6 @@ SUPABASE_KEY,
     }
 });
 
-
 /* =========================================================
    STATE
 ========================================================= */
@@ -952,7 +951,6 @@ localStorage.getItem("elbob_language") || "ar";
 
 let theme =
 localStorage.getItem("elbob_theme") || "dark";
-
 
 /* =========================================================
    TRANSLATIONS
@@ -1222,13 +1220,11 @@ siteStatusUpdated:"Site status updated ✅"
 
 };
 
-
 function t(key){
 return translations[lang]?.[key] ||
        translations.ar[key] ||
        key;
 }
-
 
 /* =========================================================
    TRANSLATION
@@ -1286,7 +1282,6 @@ renderSelectedWorkerSubmissions();
 
 }
 
-
 /* =========================================================
    LANGUAGE
 ========================================================= */
@@ -1304,7 +1299,6 @@ lang
 applyTranslations();
 
 }
-
 
 /* =========================================================
    THEME
@@ -1326,7 +1320,6 @@ theme === "dark" ? "☀️" : "🌙";
 
 }
 
-
 function toggleTheme(){
 
 theme =
@@ -1340,7 +1333,6 @@ theme
 applyTheme();
 
 }
-
 
 /* =========================================================
    TOAST
@@ -1378,7 +1370,6 @@ container.appendChild(item);
 setTimeout(()=>item.remove(),3500);
 
 }
-
 
 /* =========================================================
    AUTH MODE
@@ -1424,7 +1415,6 @@ loginTab.className =
 
 }
 
-
 /* =========================================================
    VIEWS
 ========================================================= */
@@ -1445,7 +1435,6 @@ document.getElementById("maintenanceView")
 
 }
 
-
 function showAuth(){
 
 stopWorkerRefresh();
@@ -1461,14 +1450,12 @@ document.getElementById("logoutBtn")
 
 }
 
-
 function showLoggedInHeader(){
 
 document.getElementById("logoutBtn")
 .classList.remove("hidden");
 
 }
-
 
 /* =========================================================
    SITE STATUS & DAILY RATE
@@ -1507,7 +1494,6 @@ return siteClosed;
 
 }
 
-
 function updateSiteControl(){
 
 const button =
@@ -1528,7 +1514,7 @@ siteClosed
 ?
 "px-5 py-3 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-black"
 :
-"px-5 py-3 rounded-2xl bg-red-500/10 text-red-500 font-black";
+"px-5 py-3 rounded-2xl bg- red-500/10 text-red-500 font-black";
 
 }
 
@@ -1549,7 +1535,6 @@ siteClosed
 }
 
 }
-
 
 async function saveDailyRate(){
 
@@ -1579,7 +1564,6 @@ toast(t("rateSaved"), "success");
 
 }
 
-
 function confirmToggleSite(){
 
 if(currentProfile?.role !== "owner")
@@ -1600,7 +1584,6 @@ siteClosed ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
 );
 
 }
-
 
 async function toggleSiteClosed(){
 
@@ -1643,7 +1626,6 @@ t("siteStatusUpdated"),
 
 }
 
-
 function showMaintenance(){
 
 stopWorkerRefresh();
@@ -1656,7 +1638,6 @@ document.getElementById("maintenanceView")
 showLoggedInHeader();
 
 }
-
 
 function startSiteStatusRefresh(){
 
@@ -1705,7 +1686,6 @@ await showWorker();
 
 }
 
-
 function stopSiteStatusRefresh(){
 
 if(siteStatusTimer){
@@ -1717,7 +1697,6 @@ siteStatusTimer = null;
 }
 
 }
-
 
 /* =========================================================
    SESSION
@@ -1759,7 +1738,6 @@ showAuth();
 }
 
 }
-
 
 /* =========================================================
    LOGIN
@@ -1822,7 +1800,6 @@ button.textContent = t("loginButton");
 }
 
 }
-
 
 /* =========================================================
    REGISTER
@@ -1922,7 +1899,6 @@ t("registerButton");
 
 }
 
-
 /* =========================================================
    PROFILE
 ========================================================= */
@@ -1969,7 +1945,6 @@ return false;
 }
 
 }
-
 
 /* =========================================================
    ENTER APPLICATION
@@ -2035,7 +2010,6 @@ await showWorker();
 
 }
 
-
 /* =========================================================
    WORKER
 ========================================================= */
@@ -2061,7 +2035,6 @@ await loadWorkerSubmissions();
 startWorkerRefresh();
 
 }
-
 
 function renderWorkerProfile(){
 
@@ -2096,7 +2069,6 @@ workerRateDisplay.textContent = currentDailyRate.toFixed(2) + " ج.م";
 }
 
 }
-
 
 /* =========================================================
    SAVE CASH
@@ -2136,7 +2108,6 @@ toast(t("cashSaved"),"success");
 
 }
 
-
 /* =========================================================
    COPY CASH (FOR OWNER)
 ========================================================= */
@@ -2163,7 +2134,6 @@ toast(t("cashCopied"),"success");
 });
 
 }
-
 
 /* =========================================================
    DATE (CAIRO CUTOFF 3 AM)
@@ -2214,7 +2184,6 @@ function cairoDateKey(value){
     ].join("-");
 }
 
-
 /* =========================================================
    LOAD WORKER SUBMISSIONS
 ========================================================= */
@@ -2244,7 +2213,6 @@ renderWorkerStats();
 renderWorkerSubmissions();
 
 }
-
 
 /* =========================================================
    REFRESH
@@ -2278,7 +2246,6 @@ await loadWorkerSubmissions();
 
 }
 
-
 function stopWorkerRefresh(){
 
 if(workerRefreshTimer){
@@ -2290,7 +2257,6 @@ workerRefreshTimer = null;
 }
 
 }
-
 
 /* =========================================================
    WORKER STATS (الفاليد غير المدفوع والفلوس المستحقة)
@@ -2340,7 +2306,6 @@ if(d) d.textContent = pendingMoney.toFixed(2) + " ج.م";
 
 }
 
-
 /* =========================================================
    STATUS BADGE
 ========================================================= */
@@ -2375,7 +2340,6 @@ ${t("pending")}
 
 }
 
-
 /* =========================================================
    PAYMENT BADGE
 ========================================================= */
@@ -2405,7 +2369,6 @@ ${t("paymentPending")}
 return "";
 
 }
-
 
 /* =========================================================
    WORKER SUBMISSIONS
@@ -2460,7 +2423,7 @@ return `
 
 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
 
-<div>
+<div class="flex flex-col">
 
 <div class="flex flex-wrap items-center gap-2">
 
@@ -2574,12 +2537,13 @@ ${t("checkerButton")}
 </div>
 
 </div>
+</div>
+
 `;
 
 }).join("");
 
 }
-
 
 /* =========================================================
    SUBMIT WORK
@@ -2636,11 +2600,20 @@ toast(t("chooseChecker"),"warning");
 return;
 }
 
-const MAX_SIZE = 10 * 1024 * 1024;
-if(workFile.size > MAX_SIZE || proofFile.size > MAX_SIZE){
-toast(t("fileSizeError"),"warning");
+// ---------- NEW LIMITS ----------
+const MAX_TXT_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_IMG_SIZE = 20 * 1024 * 1024; // 20 MB
+
+if(workFile.size > MAX_TXT_SIZE){
+toast(lang === "ar" ? "حجم ملف TXT كبير جداً (الحد الأقصى 10 ميجا)" : "TXT file too large (max 10MB)", "warning");
 return;
 }
+
+if(proofFile.size > MAX_IMG_SIZE){
+toast(lang === "ar" ? "حجم صورة الـ Checker كبير جداً (الحد الأقصى 20 ميجا)" : "Image too large (max 20MB)", "warning");
+return;
+}
+// ----------------------------------
 
 const button =
 document.getElementById("submitWorkBtn");
@@ -2742,7 +2715,6 @@ t("submitWork");
 
 }
 
-
 /* =========================================================
    OWNER
 ========================================================= */
@@ -2759,7 +2731,6 @@ updateSiteControl();
 await loadOwnerData();
 
 }
-
 
 async function loadOwnerData(){
 
@@ -2837,7 +2808,6 @@ document.getElementById(
 
 }
 
-
 /* =========================================================
    OWNER STATS
 ========================================================= */
@@ -2877,7 +2847,6 @@ document.getElementById(
 unpaid;
 
 }
-
 
 /* =========================================================
    WORKERS (GRID)
@@ -3022,7 +2991,6 @@ ${worker.active ? "🚪" : "🔄"}
 
 }
 
-
 /* =========================================================
    OPEN WORKER
 ========================================================= */
@@ -3058,7 +3026,6 @@ renderSelectedWorkerHeader();
 renderSelectedWorkerSubmissions();
 
 }
-
 
 /* =========================================================
    SELECTED WORKER (HEADER & STATS)
@@ -3161,7 +3128,6 @@ toggle.className =
 
 }
 
-
 /* =========================================================
    OWNER SUBMISSIONS (WITH PRICE BREAKDOWN)
 ========================================================= */
@@ -3230,7 +3196,7 @@ ${paymentBadge(row)}
 السعر: ${unitPrice.toFixed(2)} ج.م
 </div>
 <div class="px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 text-xs font-black">
-إجمالي المبلغ: ${totalPrice.toFixed(2)} ج.م
+الإجمالي: ${totalPrice.toFixed(2)} ج.م
 </div>
 </div>
 
@@ -3372,7 +3338,6 @@ ${t("delete")}
 
 }
 
-
 /* =========================================================
    REVIEW
 ========================================================= */
@@ -3404,7 +3369,9 @@ openModal(
 t("approveConfirmTitle"),
 t("approveConfirm"),
 async()=>{
+
 await executeReview(id,"approved","");
+
 },
 false,
 "bg-emerald-600 text-white"
@@ -3416,7 +3383,9 @@ openModal(
 t("rejectConfirmTitle"),
 t("rejectConfirmText"),
 async(note)=>{
+
 await executeReview(id,"rejected",note);
+
 },
 true,
 "bg-red-600 text-white"
@@ -3425,7 +3394,6 @@ true,
 }
 
 }
-
 
 async function executeReview(id,status,note=""){
 
@@ -3458,7 +3426,6 @@ status === "approved"
 await loadOwnerData();
 
 }
-
 
 /* =========================================================
    PAYMENT (INDIVIDUAL)
@@ -3508,7 +3475,6 @@ false,
 
 }
 
-
 /* =========================================================
    PAY ALL SUBMISSIONS & RESET COUNTER (تصفير الفاليد ودفع الكل)
 ========================================================= */
@@ -3523,6 +3489,7 @@ const name = selectedWorker.full_name || selectedWorker.username || "-";
 openModal(
 t("payAllTitle"),
 `${t("payAllText")}\nالعامل: ${name}`,
+
 async()=>{
 
 const {error} =
@@ -3548,7 +3515,6 @@ false,
 );
 
 }
-
 
 /* =========================================================
    DELETE
@@ -3598,7 +3564,6 @@ false,
 
 }
 
-
 /* =========================================================
    WORKER ACTIVE
 ========================================================= */
@@ -3624,10 +3589,12 @@ openModal(
 t("disableWorker"),
 `${t("disableWorkerText")}\n${name}`,
 async()=>{
+
 await setWorkerActive(
 workerId,
 false
 );
+
 },
 false,
 "bg-red-600 text-white"
@@ -3638,11 +3605,14 @@ false,
 openModal(
 t("enableWorker"),
 `${t("enableWorkerText")}\n${name}`,
+
 async()=>{
+
 await setWorkerActive(
 workerId,
 true
 );
+
 },
 false,
 "bg-emerald-600 text-white"
@@ -3651,7 +3621,6 @@ false,
 }
 
 }
-
 
 function toggleSelectedWorker(){
 
@@ -3663,7 +3632,6 @@ selectedWorker.id
 );
 
 }
-
 
 async function setWorkerActive(workerId,active){
 
@@ -3697,7 +3665,6 @@ active
 await loadOwnerData();
 
 }
-
 
 /* =========================================================
    MODAL
@@ -3747,7 +3714,6 @@ await fn(inputValue);
 
 }
 
-
 function closeModal(){
 
 document.getElementById(
@@ -3759,7 +3725,6 @@ document.getElementById("modalInputContainer").classList.add("hidden-view");
 modalAction = null;
 
 }
-
 
 /* =========================================================
    STORAGE
@@ -3804,7 +3769,6 @@ error.message || t("fileError"),
 
 }
 
-
 /* =========================================================
    LOGOUT
 ========================================================= */
@@ -3840,7 +3804,6 @@ t("logoutSuccess"),
 
 }
 
-
 /* =========================================================
    HELPERS
 ========================================================= */
@@ -3865,7 +3828,6 @@ minute:"2-digit"
 
 }
 
-
 function getFileExtension(name){
 
 if(!name)
@@ -3887,7 +3849,6 @@ return parts
 
 }
 
-
 function escapeHtml(value){
 
 if(value === null || value === undefined)
@@ -3901,7 +3862,6 @@ return String(value)
 .replace(/'/g,"&#039;");
 
 }
-
 
 /* =========================================================
    INIT
@@ -3921,7 +3881,6 @@ await checkExistingSession();
 
 }
 );
-
 
 document.getElementById(
 "confirmModal"
