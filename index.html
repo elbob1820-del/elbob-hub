@@ -359,9 +359,16 @@ class="text-sm text-slate-500 mt-1">
 
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto">
+<div class="grid grid-cols-1 sm:grid-cols-4 gap-3 w-full lg:w-auto">
 
-<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-5 py-4 min-w-[180px]">
+<div class="rounded-2xl bg-purple-500/10 border border-purple-500/20 px-4 py-4 min-w-[150px]">
+<p class="text-xs text-purple-600 dark:text-purple-300 font-bold" data-i18n="todayRateLabel">
+سعر الـ Valid اليوم
+</p>
+<p id="workerRateDisplay" class="font-black text-lg mt-1 text-purple-600 dark:text-purple-300">0.00 ج.م</p>
+</div>
+
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-4 py-4 min-w-[150px]">
 
 <p data-i18n="fullName"
 class="text-xs text-slate-500">
@@ -372,7 +379,7 @@ class="text-xs text-slate-500">
 
 </div>
 
-<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-5 py-4 min-w-[180px]">
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-4 py-4 min-w-[150px]">
 
 <p data-i18n="username"
 class="text-xs text-slate-500">
@@ -383,7 +390,7 @@ class="text-xs text-slate-500">
 
 </div>
 
-<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-5 py-4 min-w-[180px]">
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-4 py-4 min-w-[180px]">
 
 <p data-i18n="cashNumber"
 class="text-xs text-slate-500">
@@ -411,42 +418,38 @@ data-i18n="save">
 </section>
 
 
-<section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
+<section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
 
 <div class="rounded-3xl p-5 border border-emerald-500/20 bg-emerald-500/10">
-
-<p data-i18n="todayValid"
-class="text-sm text-emerald-600 dark:text-emerald-300">
+<p data-i18n="todayValid" class="text-sm text-emerald-600 dark:text-emerald-300 font-bold">
 Valid اليوم
 </p>
-
-<p id="todayValid"
-class="text-3xl font-black mt-2">0</p>
-
+<p id="todayValid" class="text-3xl font-black mt-2">0</p>
 </div>
 
 <div class="rounded-3xl p-5 border border-yellow-500/20 bg-yellow-500/10">
-
-<p data-i18n="todayLocked"
-class="text-sm text-yellow-600 dark:text-yellow-300">
+<p data-i18n="todayLocked" class="text-sm text-yellow-600 dark:text-yellow-300 font-bold">
 Locked اليوم
 </p>
-
-<p id="todayLocked"
-class="text-3xl font-black mt-2">0</p>
-
+<p id="todayLocked" class="text-3xl font-black mt-2">0</p>
 </div>
 
+<!-- هذا الرقم يتصفر فور قيام الأونر بالدفع -->
 <div class="rounded-3xl p-5 border border-blue-500/20 bg-blue-500/10">
-
-<p data-i18n="totalValid"
-class="text-sm text-blue-600 dark:text-blue-300">
-Total Valid
+<p data-i18n="unpaidValidLabel" class="text-sm text-blue-600 dark:text-blue-300 font-bold">
+Valid قيد الحساب (غير مدفوع)
 </p>
+<p id="totalValid" class="text-3xl font-black mt-2">0</p>
+<p class="text-[11px] text-slate-400 mt-1">يتصفر بعد استلام الفلوس</p>
+</div>
 
-<p id="totalValid"
-class="text-3xl font-black mt-2">0</p>
-
+<!-- الأرباح المستحقة بالجنيه وتتصفر فور الدفع -->
+<div class="rounded-3xl p-5 border border-emerald-500/30 bg-emerald-600/15">
+<p data-i18n="pendingBalanceLabel" class="text-sm text-emerald-500 font-bold">
+مستحقاتك الحالية 💵
+</p>
+<p id="workerPendingMoney" class="text-3xl font-black mt-2 text-emerald-500">0.00 ج.م</p>
+<p class="text-[11px] text-slate-400 mt-1">إجمالي الفلوس المطلوب استلامها</p>
 </div>
 
 </section>
@@ -615,7 +618,7 @@ class="hidden-view max-w-7xl mx-auto px-4 py-7">
 
 <section class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 md:p-7 mb-6">
 
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
 
 <div>
 
@@ -636,7 +639,24 @@ class="text-sm text-slate-500 mt-1">
 
 </div>
 
-<div class="flex flex-wrap items-center gap-2">
+<div class="flex flex-wrap items-center gap-3">
+
+<div class="flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10">
+<span class="text-xs font-bold text-slate-500">سعر الـ Valid اليوم:</span>
+<input
+id="dailyRateInput"
+type="number"
+step="0.25"
+min="0"
+placeholder="0.00"
+class="w-20 bg-transparent text-center font-black outline-none ltr-input">
+<span class="text-xs font-bold text-slate-400">ج.م</span>
+<button
+onclick="saveDailyRate()"
+class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs transition">
+حفظ السعر 💾
+</button>
+</div>
 
 <div
 id="siteStatusBadge"
@@ -668,7 +688,7 @@ data-i18n="refresh">
 
 <div class="rounded-3xl p-5 bg-blue-500/10 border border-blue-500/20">
 <p data-i18n="workers"
-class="text-sm text-blue-600 dark:text-blue-300">
+class="text-sm text-blue-600 dark:text-blue-300 font-bold">
 العمال
 </p>
 <p id="ownerWorkersCount"
@@ -677,7 +697,7 @@ class="text-3xl font-black mt-2">0</p>
 
 <div class="rounded-3xl p-5 bg-yellow-500/10 border border-yellow-500/20">
 <p data-i18n="submissions"
-class="text-sm text-yellow-600 dark:text-yellow-300">
+class="text-sm text-yellow-600 dark:text-yellow-300 font-bold">
 التسليمات
 </p>
 <p id="ownerSubmissionsCount"
@@ -686,7 +706,7 @@ class="text-3xl font-black mt-2">0</p>
 
 <div class="rounded-3xl p-5 bg-emerald-500/10 border border-emerald-500/20">
 <p data-i18n="paid"
-class="text-sm text-emerald-600 dark:text-emerald-300">
+class="text-sm text-emerald-600 dark:text-emerald-300 font-bold">
 تم الدفع
 </p>
 <p id="ownerPaidCount"
@@ -695,7 +715,7 @@ class="text-3xl font-black mt-2">0</p>
 
 <div class="rounded-3xl p-5 bg-red-500/10 border border-red-500/20">
 <p data-i18n="unpaid"
-class="text-sm text-red-600 dark:text-red-300">
+class="text-sm text-red-600 dark:text-red-300 font-bold">
 قيد الحساب
 </p>
 <p id="ownerUnpaidCount"
@@ -753,50 +773,46 @@ class="text-sm text-slate-500 mt-1">
 
 </div>
 
-<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
 
-<div class="rounded-2xl bg-slate-100 dark:bg-black/25 p-4">
-<p data-i18n="valid"
-class="text-xs text-slate-500">Valid</p>
-<p id="selectedValid"
-class="text-xl font-black mt-1">0</p>
+<div class="rounded-2xl bg-blue-500/10 p-4 border border-blue-500/20">
+<p class="text-xs text-blue-600 dark:text-blue-300 font-bold">Valid قيد الحساب</p>
+<p id="selectedValid" class="text-2xl font-black mt-1 text-blue-600 dark:text-blue-300">0</p>
+<p class="text-[10px] text-slate-400">يتصفر فور الدفع</p>
 </div>
 
 <div class="rounded-2xl bg-slate-100 dark:bg-black/25 p-4">
-<p data-i18n="locked"
-class="text-xs text-slate-500">Locked</p>
-<p id="selectedLocked"
-class="text-xl font-black mt-1">0</p>
+<p data-i18n="locked" class="text-xs text-slate-500">Locked</p>
+<p id="selectedLocked" class="text-xl font-black mt-1">0</p>
 </div>
 
-<div class="rounded-2xl bg-emerald-500/10 p-4">
-<p data-i18n="paid"
-class="text-xs text-emerald-600 dark:text-emerald-300">مدفوع</p>
-<p id="selectedPaid"
-class="text-xl font-black mt-1">0</p>
+<div class="rounded-2xl bg-emerald-500/15 p-4 border border-emerald-500/30">
+<p class="text-xs text-emerald-500 font-bold">المستحق للدفع 💵</p>
+<p id="selectedPendingMoney" class="text-2xl font-black mt-1 text-emerald-500">0.00 ج.م</p>
+<p class="text-[10px] text-slate-400">تراكمي غير مدفوع</p>
 </div>
 
-<div class="rounded-2xl bg-yellow-500/10 p-4">
-<p data-i18n="unpaid"
-class="text-xs text-yellow-600 dark:text-yellow-300">قيد الحساب</p>
-<p id="selectedUnpaid"
-class="text-xl font-black mt-1">0</p>
+<div class="rounded-2xl bg-purple-500/10 p-4">
+<p class="text-xs text-purple-600 dark:text-purple-300 font-bold">إجمالي المدفوع سابقاً</p>
+<p id="selectedPaidMoney" class="text-xl font-black mt-1 text-purple-600 dark:text-purple-300">0.00 ج.م</p>
 </div>
 
 </div>
 </div>
 
-<div class="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex flex-wrap gap-3">
+<div class="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-3">
 
-<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-4 py-3">
+<div class="flex flex-wrap items-center gap-2">
 
-<span data-i18n="cashNumberLabel"
-class="text-xs text-slate-500">
-رقم الكاش:
-</span>
-
-<strong id="selectedCash" class="mr-1">-</strong>
-
+<div class="rounded-2xl bg-slate-100 dark:bg-black/25 px-4 py-3 flex items-center gap-2">
+<span data-i18n="cashNumberLabel" class="text-xs text-slate-500">رقم الكاش:</span>
+<strong id="selectedCash" class="mx-1 font-black">-</strong>
+<button
+onclick="copyCashNumber()"
+title="نسخ رقم الكاش"
+class="px-2.5 py-1 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-xs font-bold transition">
+📋 نسخ
+</button>
 </div>
 
 <button
@@ -804,6 +820,15 @@ id="toggleWorkerBtn"
 onclick="toggleSelectedWorker()"
 class="px-4 py-3 rounded-2xl font-black">
 -
+</button>
+
+</div>
+
+<button
+id="payAllBtn"
+onclick="confirmPayAllWorker()"
+class="px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
+<span>💵 دفع كل المستحقات وتصفير الفاليد</span>
 </button>
 
 </div>
@@ -843,6 +868,15 @@ class="text-xl font-black">
 class="text-sm text-slate-500 dark:text-slate-400 mt-3 leading-7">
 هل أنت متأكد؟
 </p>
+
+<div id="modalInputContainer" class="hidden-view mt-4">
+<label class="block text-xs text-slate-400 mb-1" id="modalInputLabel">سبب الرفض (اختياري):</label>
+<textarea
+id="modalInput"
+rows="2"
+placeholder="اكتب سبب الرفض هنا..."
+class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none text-sm"></textarea>
+</div>
 
 <div class="flex gap-3 mt-6">
 
@@ -886,9 +920,9 @@ SUPABASE_URL,
 SUPABASE_KEY,
 {
     auth:{
-        persistSession:false,
-        autoRefreshToken:false,
-        detectSessionInUrl:false
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:true
     }
 });
 
@@ -911,6 +945,7 @@ let workerRefreshTimer = null;
 let siteStatusTimer = null;
 
 let siteClosed = false;
+let currentDailyRate = 0;
 
 let lang =
 localStorage.getItem("elbob_language") || "ar";
@@ -946,6 +981,9 @@ save:"حفظ",
 todayValid:"Valid اليوم",
 todayLocked:"Locked اليوم",
 totalValid:"Total Valid",
+todayRateLabel:"سعر الـ Valid اليوم",
+unpaidValidLabel:"Valid قيد الحساب (غير مدفوع)",
+pendingBalanceLabel:"مستحقاتك الحالية 💵",
 newSubmission:"تسليم شغل جديد",
 motivation:"كل تسليمة بتقربك لهدفك 🔥",
 validCount:"Valid Count",
@@ -995,6 +1033,9 @@ valid:"Valid",
 locked:"Locked",
 confirmPayment:"تأكيد الدفع",
 confirmPaymentText:"هل أنت متأكد إنك دفعت هذه التسليمة؟",
+payAllTitle:"تأكيد دفع كل المستحقات",
+payAllText:"هل تريد تسجيل دفع جميع التسليمات وتصفير عداد الفاليد لهذا العامل؟",
+payAllSuccess:"تم تسجيل الدفع وتصفير عداد الفاليد بنجاح 💵",
 deleteSubmission:"حذف التسليمة",
 deleteSubmissionText:"تحذير: سيتم حذف التسليمة نهائياً. هل أنت متأكد؟",
 disableWorker:"تعطيل العامل",
@@ -1007,18 +1048,24 @@ loginLoading:"جاري الدخول...",
 registerLoading:"جاري إنشاء الحساب...",
 uploadLoading:"جاري رفع التسليمة...",
 loginSuccess:"تم تسجيل الدخول بنجاح ✅",
-accountCreated:"تم إنشاء الحساب. لو طلب تأكيد الإيميل، أكده ثم سجل دخول.",
+accountCreated:"تم إنشاء الحساب بنجاح ✅",
 accountDisabled:"هذا الحساب تم تعطيله بواسطة الإدارة.",
 profileError:"تعذر تحميل بيانات الحساب",
 cashRequired:"اكتب رقم الكاش أولاً",
 cashSaved:"تم حفظ رقم الكاش ✅",
+cashCopied:"تم نسخ رقم الكاش بنجاح 📋",
+rateSaved:"تم حفظ سعر الـ Valid بنجاح ✅",
 chooseTxt:"اختار ملف TXT",
 chooseChecker:"اختار صورة Checker",
+fileSizeError:"حجم الملف كبير جداً (الحد الأقصى 10 ميجا)",
 submissionSuccess:"تم إرسال التسليمة بنجاح ✅",
 submissionError:"حدث خطأ أثناء التسليم",
 alreadyReviewed:"التسليمة تمت مراجعتها بالفعل",
+approveConfirmTitle:"قبول التسليمة",
 approveConfirm:"هل تريد قبول هذه التسليمة؟",
-rejectReason:"اكتب سبب الرفض (اختياري):",
+rejectConfirmTitle:"رفض التسليمة",
+rejectConfirmText:"هل أنت متأكد من رفض هذه التسليمة؟",
+rejectReasonLabel:"سبب الرفض (اختياري):",
 approvedSuccess:"تم قبول التسليمة ✅",
 rejectedSuccess:"تم رفض التسليمة ❌",
 paymentSuccess:"تم تسجيل الدفع بنجاح 💵",
@@ -1064,6 +1111,9 @@ save:"Save",
 todayValid:"Valid Today",
 todayLocked:"Locked Today",
 totalValid:"Total Valid",
+todayRateLabel:"Today's Valid Rate",
+unpaidValidLabel:"Unpaid Valid (Pending)",
+pendingBalanceLabel:"Pending Balance 💵",
 newSubmission:"Submit New Work",
 motivation:"Every submission gets you closer to your goal 🔥",
 validCount:"Valid Count",
@@ -1113,6 +1163,9 @@ valid:"Valid",
 locked:"Locked",
 confirmPayment:"Confirm Payment",
 confirmPaymentText:"Are you sure you paid this submission?",
+payAllTitle:"Confirm Paying All Submissions",
+payAllText:"Do you want to mark all submissions as paid and reset the valid count for this worker?",
+payAllSuccess:"Payment recorded and valid counter reset successfully 💵",
 deleteSubmission:"Delete Submission",
 deleteSubmissionText:"Warning: this submission will be permanently deleted. Are you sure?",
 disableWorker:"Disable Worker",
@@ -1125,18 +1178,24 @@ loginLoading:"Logging in...",
 registerLoading:"Creating account...",
 uploadLoading:"Uploading submission...",
 loginSuccess:"Logged in successfully ✅",
-accountCreated:"Account created. If email confirmation is required, confirm your email and then log in.",
+accountCreated:"Account created successfully ✅",
 accountDisabled:"This account has been disabled by the administration.",
 profileError:"Unable to load account information",
 cashRequired:"Enter the cash number first",
 cashSaved:"Cash number saved ✅",
+cashCopied:"Cash number copied 📋",
+rateSaved:"Valid rate saved successfully ✅",
 chooseTxt:"Choose a TXT file",
 chooseChecker:"Choose a Checker image",
+fileSizeError:"File too large (maximum 10MB)",
 submissionSuccess:"Submission sent successfully ✅",
 submissionError:"An error occurred while submitting",
 alreadyReviewed:"This submission has already been reviewed",
+approveConfirmTitle:"Approve Submission",
 approveConfirm:"Do you want to approve this submission?",
-rejectReason:"Enter the rejection reason (optional):",
+rejectConfirmTitle:"Reject Submission",
+rejectConfirmText:"Are you sure you want to reject this submission?",
+rejectReasonLabel:"Rejection Reason (optional):",
 approvedSuccess:"Submission approved ✅",
 rejectedSuccess:"Submission rejected ❌",
 paymentSuccess:"Payment recorded successfully 💵",
@@ -1412,7 +1471,7 @@ document.getElementById("logoutBtn")
 
 
 /* =========================================================
-   SITE STATUS
+   SITE STATUS & DAILY RATE
 ========================================================= */
 
 async function loadSiteStatus(){
@@ -1420,22 +1479,29 @@ async function loadSiteStatus(){
 const {data,error} =
 await db
 .from("site_settings")
-.select("is_closed")
+.select("is_closed, valid_price")
 .eq("id",1)
 .maybeSingle();
 
 if(error){
-
 console.error("Site status error:",error);
-
 return siteClosed;
-
 }
 
-siteClosed =
-!!data?.is_closed;
+siteClosed = !!data?.is_closed;
+currentDailyRate = Number(data?.valid_price || 0);
 
 updateSiteControl();
+
+const rateInput = document.getElementById("dailyRateInput");
+if(rateInput && document.activeElement !== rateInput){
+rateInput.value = currentDailyRate;
+}
+
+const workerRateDisplay = document.getElementById("workerRateDisplay");
+if(workerRateDisplay){
+workerRateDisplay.textContent = currentDailyRate.toFixed(2) + " ج.م";
+}
 
 return siteClosed;
 
@@ -1485,6 +1551,35 @@ siteClosed
 }
 
 
+async function saveDailyRate(){
+
+if(!currentUser || currentProfile?.role !== "owner")
+return;
+
+const input = document.getElementById("dailyRateInput");
+const rate = Math.max(0, Number(input.value || 0));
+
+const {error} =
+await db
+.from("site_settings")
+.update({
+valid_price: rate,
+updated_at: new Date().toISOString(),
+updated_by: currentUser.id
+})
+.eq("id", 1);
+
+if(error){
+toast(error.message || t("unknownError"), "error");
+return;
+}
+
+currentDailyRate = rate;
+toast(t("rateSaved"), "success");
+
+}
+
+
 function confirmToggleSite(){
 
 if(currentProfile?.role !== "owner")
@@ -1499,7 +1594,9 @@ siteClosed
 ? t("openSiteText")
 : t("closeSiteText"),
 
-toggleSiteClosed
+toggleSiteClosed,
+false,
+siteClosed ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
 );
 
 }
@@ -1603,7 +1700,7 @@ await showWorker();
 }
 
 },
-15000
+20000
 );
 
 }
@@ -1770,10 +1867,8 @@ try{
 
 const {data,error} =
 await db.auth.signUp({
-
 email,
 password,
-
 options:{
 data:{
 full_name,
@@ -1781,7 +1876,6 @@ username,
 cash_number
 }
 }
-
 });
 
 if(error)
@@ -1790,17 +1884,22 @@ throw error;
 if(data.session){
 
 currentUser = data.user;
-
+toast(t("loginSuccess"),"success");
 await enterApplication();
 
 }else{
 
-toast(
-t("accountCreated"),
-"success"
-);
+const loginRes = await db.auth.signInWithPassword({
+email,
+password
+});
 
-showAuthMode("login");
+if(loginRes.error)
+throw loginRes.error;
+
+currentUser = loginRes.data.user;
+toast(t("loginSuccess"),"success");
+await enterApplication();
 
 }
 
@@ -1991,6 +2090,11 @@ document.getElementById("cashInput")
 .value =
 currentProfile.cash_number || "";
 
+const workerRateDisplay = document.getElementById("workerRateDisplay");
+if(workerRateDisplay){
+workerRateDisplay.textContent = currentDailyRate.toFixed(2) + " ج.م";
+}
+
 }
 
 
@@ -2034,7 +2138,35 @@ toast(t("cashSaved"),"success");
 
 
 /* =========================================================
-   DATE
+   COPY CASH (FOR OWNER)
+========================================================= */
+
+function copyCashNumber(){
+
+const cash =
+document.getElementById("selectedCash").textContent.trim();
+
+if(!cash || cash === "-" || cash === t("noCash")){
+return;
+}
+
+navigator.clipboard.writeText(cash).then(()=>{
+toast(t("cashCopied"),"success");
+}).catch(()=>{
+const el = document.createElement('textarea');
+el.value = cash;
+document.body.appendChild(el);
+el.select();
+document.execCommand('copy');
+document.body.removeChild(el);
+toast(t("cashCopied"),"success");
+});
+
+}
+
+
+/* =========================================================
+   DATE (CAIRO CUTOFF 3 AM)
 ========================================================= */
 
 function cairoDateKey(value){
@@ -2161,7 +2293,7 @@ workerRefreshTimer = null;
 
 
 /* =========================================================
-   WORKER STATS
+   WORKER STATS (الفاليد غير المدفوع والفلوس المستحقة)
 ========================================================= */
 
 function renderWorkerStats(){
@@ -2171,49 +2303,40 @@ cairoDateKey();
 
 let todayValid = 0;
 let todayLocked = 0;
-let totalValid = 0;
+let unpaidValid = 0;
+let pendingMoney = 0;
 
 submissions.forEach(row=>{
 
-const valid =
-Number(row.valid_count || 0);
-
-const locked =
-Number(row.locked_count || 0);
-
-const rowDay =
-cairoDateKey(row.created_at);
+const valid = Number(row.valid_count || 0);
+const locked = Number(row.locked_count || 0);
+const rowDay = cairoDateKey(row.created_at);
 
 if(rowDay === todayKey){
-
 todayValid += valid;
 todayLocked += locked;
-
 }
 
-if(
-row.status !== "rejected" &&
-row.payment_status !== "paid"
-){
+if(row.status !== "rejected" && row.payment_status !== "paid"){
+unpaidValid += valid;
+}
 
-totalValid += valid;
-
+if(row.status === "approved" && row.payment_status !== "paid"){
+const price = Number(row.total_price || (valid * (row.unit_price || currentDailyRate)));
+pendingMoney += price;
 }
 
 });
 
-const a =
-document.getElementById("todayValid");
+const a = document.getElementById("todayValid");
+const b = document.getElementById("todayLocked");
+const c = document.getElementById("totalValid");
+const d = document.getElementById("workerPendingMoney");
 
-const b =
-document.getElementById("todayLocked");
-
-const c =
-document.getElementById("totalValid");
-
-if(a)a.textContent = todayValid;
-if(b)b.textContent = todayLocked;
-if(c)c.textContent = totalValid;
+if(a) a.textContent = todayValid;
+if(b) b.textContent = todayLocked;
+if(c) c.textContent = unpaidValid;
+if(d) d.textContent = pendingMoney.toFixed(2) + " ج.م";
 
 }
 
@@ -2327,6 +2450,10 @@ row.paid_at
 ? formatDate(row.paid_at)
 : "";
 
+const valid = Number(row.valid_count || 0);
+const unitPrice = Number(row.unit_price || 0);
+const totalPrice = Number(row.total_price || (valid * unitPrice));
+
 return `
 
 <div class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 card-hover">
@@ -2346,6 +2473,15 @@ ${paymentBadge(row)}
 📅 ${date}
 </p>
 
+<div class="flex items-center gap-3 mt-3 text-xs">
+<span class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-black/30 font-bold">
+سعر الـ Valid: <strong class="text-purple-500">${unitPrice.toFixed(2)} ج.م</strong>
+</span>
+<span class="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-black">
+الإجمالي: ${totalPrice.toFixed(2)} ج.م
+</span>
+</div>
+
 </div>
 
 <div class="grid grid-cols-2 gap-3">
@@ -2357,7 +2493,7 @@ ${t("valid")}
 </p>
 
 <p class="text-xl font-black">
-${Number(row.valid_count || 0)}
+${valid}
 </p>
 
 </div>
@@ -2491,17 +2627,19 @@ const proofFile =
 document.getElementById("proofFile").files[0];
 
 if(!workFile){
-
 toast(t("chooseTxt"),"warning");
 return;
-
 }
 
 if(!proofFile){
-
 toast(t("chooseChecker"),"warning");
 return;
+}
 
+const MAX_SIZE = 10 * 1024 * 1024;
+if(workFile.size > MAX_SIZE || proofFile.size > MAX_SIZE){
+toast(t("fileSizeError"),"warning");
+return;
 }
 
 const button =
@@ -2742,7 +2880,7 @@ unpaid;
 
 
 /* =========================================================
-   WORKERS
+   WORKERS (GRID)
 ========================================================= */
 
 function renderWorkers(){
@@ -2774,29 +2912,26 @@ submissions.filter(
 s=>s.worker_id === worker.id
 );
 
-const approved =
+const unpaidApproved =
 workerSubs.filter(
-s=>s.status === "approved"
+s=>s.status === "approved" && s.payment_status !== "paid"
 );
 
-const valid =
-approved.reduce(
+const unpaidValid =
+unpaidApproved.reduce(
 (sum,s)=>
 sum + Number(s.valid_count || 0),
 0
 );
 
-const locked =
-approved.reduce(
+const unpaidMoney =
+unpaidApproved.reduce(
 (sum,s)=>
-sum + Number(s.locked_count || 0),
+sum + Number(s.total_price || (Number(s.valid_count || 0) * Number(s.unit_price || 0))),
 0
 );
 
-const unpaid =
-approved.filter(
-s=>s.payment_status !== "paid"
-).length;
+const unpaidSubmissionsCount = unpaidApproved.length;
 
 return `
 
@@ -2837,34 +2972,25 @@ worker.active
 
 <div class="grid grid-cols-3 gap-2 mt-5">
 
-<div class="rounded-2xl bg-slate-100 dark:bg-black/25 p-3">
-
-<p class="text-[11px] text-slate-500">
-${t("valid")}
+<div class="rounded-2xl bg-blue-500/10 p-3">
+<p class="text-[11px] text-blue-600 dark:text-blue-300 font-bold">
+Valid مستحق
 </p>
-
-<p class="font-black mt-1">${valid}</p>
-
+<p class="font-black text-lg mt-1 text-blue-600 dark:text-blue-300">${unpaidValid}</p>
 </div>
 
-<div class="rounded-2xl bg-slate-100 dark:bg-black/25 p-3">
-
-<p class="text-[11px] text-slate-500">
-${t("locked")}
+<div class="rounded-2xl bg-emerald-500/15 p-3">
+<p class="text-[11px] text-emerald-500 font-bold">
+المستحق
 </p>
-
-<p class="font-black mt-1">${locked}</p>
-
+<p class="font-black text-base mt-1 text-emerald-500">${unpaidMoney.toFixed(2)} ج.م</p>
 </div>
 
 <div class="rounded-2xl bg-yellow-500/10 p-3">
-
-<p class="text-[11px] text-yellow-600 dark:text-yellow-300">
-${t("unpaid")}
+<p class="text-[11px] text-yellow-600 dark:text-yellow-300 font-bold">
+تسليمات
 </p>
-
-<p class="font-black mt-1">${unpaid}</p>
-
+<p class="font-black text-lg mt-1">${unpaidSubmissionsCount}</p>
 </div>
 
 </div>
@@ -2935,7 +3061,7 @@ renderSelectedWorkerSubmissions();
 
 
 /* =========================================================
-   SELECTED WORKER
+   SELECTED WORKER (HEADER & STATS)
 ========================================================= */
 
 function renderSelectedWorkerHeader(){
@@ -2960,46 +3086,59 @@ document.getElementById(
 ).textContent =
 worker.cash_number || t("noCash");
 
-const approved =
+const unpaidApproved =
 selectedWorkerSubmissions.filter(
-s=>s.status === "approved"
+s=>s.status === "approved" && s.payment_status !== "paid"
 );
 
-const valid =
-approved.reduce(
+const unpaidValid =
+unpaidApproved.reduce(
 (sum,s)=>
 sum + Number(s.valid_count || 0),
 0
 );
 
+const pendingMoney =
+unpaidApproved.reduce(
+(sum,s)=>
+sum + Number(s.total_price || (Number(s.valid_count || 0) * Number(s.unit_price || 0))),
+0
+);
+
+const paidSubmissions =
+selectedWorkerSubmissions.filter(
+s=>s.payment_status === "paid"
+);
+
+const totalPaidMoney =
+paidSubmissions.reduce(
+(sum,s)=>
+sum + Number(s.total_price || (Number(s.valid_count || 0) * Number(s.unit_price || 0))),
+0
+);
+
 const locked =
-approved.reduce(
+selectedWorkerSubmissions.reduce(
 (sum,s)=>
 sum + Number(s.locked_count || 0),
 0
 );
 
-const paid =
-approved.filter(
-s=>s.payment_status === "paid"
-).length;
+document.getElementById("selectedValid").textContent = unpaidValid;
+document.getElementById("selectedLocked").textContent = locked;
+document.getElementById("selectedPendingMoney").textContent = pendingMoney.toFixed(2) + " ج.م";
+document.getElementById("selectedPaidMoney").textContent = totalPaidMoney.toFixed(2) + " ج.م";
 
-const unpaid =
-approved.filter(
-s=>s.payment_status !== "paid"
-).length;
-
-document.getElementById("selectedValid")
-.textContent = valid;
-
-document.getElementById("selectedLocked")
-.textContent = locked;
-
-document.getElementById("selectedPaid")
-.textContent = paid;
-
-document.getElementById("selectedUnpaid")
-.textContent = unpaid;
+const payAllBtn = document.getElementById("payAllBtn");
+if(payAllBtn){
+payAllBtn.disabled = pendingMoney <= 0;
+payAllBtn.innerHTML = `<span>💵 دفع كل المستحقات (${pendingMoney.toFixed(2)} ج.م) وتصفير الفاليد</span>`;
+if(pendingMoney <= 0){
+payAllBtn.className = "px-6 py-3.5 rounded-2xl bg-slate-300 dark:bg-white/10 text-slate-500 font-black text-sm cursor-not-allowed flex items-center gap-2";
+}else{
+payAllBtn.className = "px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base shadow-lg shadow-emerald-600/20 transition flex items-center gap-2";
+}
+}
 
 const toggle =
 document.getElementById("toggleWorkerBtn");
@@ -3024,7 +3163,7 @@ toggle.className =
 
 
 /* =========================================================
-   OWNER SUBMISSIONS
+   OWNER SUBMISSIONS (WITH PRICE BREAKDOWN)
 ========================================================= */
 
 function renderSelectedWorkerSubmissions(){
@@ -3063,6 +3202,10 @@ row.paid_at
 ? formatDate(row.paid_at)
 : "";
 
+const valid = Number(row.valid_count || 0);
+const unitPrice = Number(row.unit_price || 0);
+const totalPrice = Number(row.total_price || (valid * unitPrice));
+
 return `
 
 <div class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5">
@@ -3082,23 +3225,32 @@ ${paymentBadge(row)}
 📅 ${date}
 </p>
 
+<div class="flex flex-wrap items-center gap-3 mt-3">
+<div class="px-3.5 py-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-300 text-xs font-black">
+السعر: ${unitPrice.toFixed(2)} ج.م
+</div>
+<div class="px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 text-xs font-black">
+إجمالي المبلغ: ${totalPrice.toFixed(2)} ج.م
+</div>
+</div>
+
 <div class="grid grid-cols-2 gap-3 mt-4 max-w-sm">
 
 <div class="rounded-2xl bg-emerald-500/10 p-4">
 
-<p class="text-xs text-emerald-600 dark:text-emerald-300">
+<p class="text-xs text-emerald-600 dark:text-emerald-300 font-bold">
 ${t("valid")}
 </p>
 
 <p class="text-2xl font-black mt-1">
-${Number(row.valid_count || 0)}
+${valid}
 </p>
 
 </div>
 
 <div class="rounded-2xl bg-yellow-500/10 p-4">
 
-<p class="text-xs text-yellow-600 dark:text-yellow-300">
+<p class="text-xs text-yellow-600 dark:text-yellow-300 font-bold">
 ${t("locked")}
 </p>
 
@@ -3225,7 +3377,7 @@ ${t("delete")}
    REVIEW
 ========================================================= */
 
-async function reviewSubmission(id,status){
+function reviewSubmission(id,status){
 
 const row =
 submissions.find(
@@ -3246,24 +3398,36 @@ return;
 
 }
 
-let note = "";
-
-if(status === "rejected"){
-
-note =
-prompt(t("rejectReason"));
-
-if(note === null)
-note = "";
-
-}
-
 if(status === "approved"){
 
-if(!confirm(t("approveConfirm")))
-return;
+openModal(
+t("approveConfirmTitle"),
+t("approveConfirm"),
+async()=>{
+await executeReview(id,"approved","");
+},
+false,
+"bg-emerald-600 text-white"
+);
+
+}else if(status === "rejected"){
+
+openModal(
+t("rejectConfirmTitle"),
+t("rejectConfirmText"),
+async(note)=>{
+await executeReview(id,"rejected",note);
+},
+true,
+"bg-red-600 text-white"
+);
 
 }
+
+}
+
+
+async function executeReview(id,status,note=""){
 
 const {error} =
 await db
@@ -3271,7 +3435,7 @@ await db
 .update({
 status,
 owner_note:
-note.trim() ? note.trim() : null,
+note && note.trim() ? note.trim() : null,
 reviewed_by:currentUser.id,
 reviewed_at:new Date().toISOString()
 })
@@ -3297,7 +3461,7 @@ await loadOwnerData();
 
 
 /* =========================================================
-   PAYMENT
+   PAYMENT (INDIVIDUAL)
 ========================================================= */
 
 function confirmPayment(id){
@@ -3337,7 +3501,50 @@ t("paymentSuccess"),
 
 await loadOwnerData();
 
+},
+false,
+"bg-blue-600 text-white"
+);
+
 }
+
+
+/* =========================================================
+   PAY ALL SUBMISSIONS & RESET COUNTER (تصفير الفاليد ودفع الكل)
+========================================================= */
+
+function confirmPayAllWorker(){
+
+if(!selectedWorker)
+return;
+
+const name = selectedWorker.full_name || selectedWorker.username || "-";
+
+openModal(
+t("payAllTitle"),
+`${t("payAllText")}\nالعامل: ${name}`,
+async()=>{
+
+const {error} =
+await db.rpc(
+"pay_all_worker_submissions",
+{
+p_worker_id: selectedWorker.id
+}
+);
+
+if(error){
+toast(error.message, "error");
+return;
+}
+
+toast(t("payAllSuccess"), "success");
+
+await loadOwnerData();
+
+},
+false,
+"bg-emerald-600 text-white"
 );
 
 }
@@ -3384,7 +3591,9 @@ t("deleteSuccess"),
 
 await loadOwnerData();
 
-}
+},
+false,
+"bg-red-600 text-white"
 );
 
 }
@@ -3419,7 +3628,9 @@ await setWorkerActive(
 workerId,
 false
 );
-}
+},
+false,
+"bg-red-600 text-white"
 );
 
 }else{
@@ -3432,7 +3643,9 @@ await setWorkerActive(
 workerId,
 true
 );
-}
+},
+false,
+"bg-emerald-600 text-white"
 );
 
 }
@@ -3490,7 +3703,7 @@ await loadOwnerData();
    MODAL
 ========================================================= */
 
-function openModal(title,text,action){
+function openModal(title, text, action, showInput = false, confirmBtnClass = "bg-red-600 text-white"){
 
 document.getElementById(
 "modalTitle"
@@ -3500,26 +3713,35 @@ document.getElementById(
 "modalText"
 ).textContent = text;
 
+const inputContainer = document.getElementById("modalInputContainer");
+const modalInput = document.getElementById("modalInput");
+
+if(showInput){
+inputContainer.classList.remove("hidden-view");
+modalInput.value = "";
+}else{
+inputContainer.classList.add("hidden-view");
+}
+
 modalAction = action;
+
+const confirmBtn = document.getElementById("confirmBtn");
+confirmBtn.className = `flex-1 py-3 rounded-2xl font-black ${confirmBtnClass}`;
+confirmBtn.textContent = t("confirm");
 
 document.getElementById(
 "confirmModal"
 ).classList.remove("hidden-view");
 
-document.getElementById(
-"confirmBtn"
-).textContent = t("confirm");
-
-document.getElementById(
-"confirmBtn"
-).onclick = async()=>{
+confirmBtn.onclick = async()=>{
 
 const fn = modalAction;
+const inputValue = modalInput.value;
 
 closeModal();
 
 if(fn)
-await fn();
+await fn(inputValue);
 
 };
 
@@ -3531,6 +3753,8 @@ function closeModal(){
 document.getElementById(
 "confirmModal"
 ).classList.add("hidden-view");
+
+document.getElementById("modalInputContainer").classList.add("hidden-view");
 
 modalAction = null;
 
