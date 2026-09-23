@@ -568,6 +568,46 @@ class="text-sm text-slate-500">
 </main>
 
 
+<!-- MAINTENANCE -->
+
+<main id="maintenanceView"
+class="hidden-view min-h-[calc(100vh-82px)] flex items-center justify-center px-4 py-10">
+
+<div class="w-full max-w-lg text-center">
+
+<div class="rounded-[32px] border border-red-500/20 bg-white dark:bg-white/[.04] p-8 md:p-12 shadow-2xl">
+
+<div class="mx-auto w-24 h-24 rounded-[30px] bg-red-500/10 flex items-center justify-center text-5xl mb-6">
+🔒
+</div>
+
+<h2
+data-i18n="siteClosedTitle"
+class="text-3xl md:text-4xl font-black">
+الموقع مغلق مؤقتًا 🔒
+</h2>
+
+<p
+data-i18n="siteClosedText"
+class="text-slate-500 dark:text-slate-400 mt-4 leading-8">
+الموقع متوقف حاليًا للصيانة أو لفترة مؤقتة.
+</p>
+
+<div class="mt-7 rounded-2xl bg-slate-100 dark:bg-black/25 px-5 py-4">
+
+<p
+data-i18n="siteClosedHint"
+class="text-sm font-bold text-slate-600 dark:text-slate-300">
+سيعود الموقع للعمل بمجرد فتحه من الإدارة.
+</p>
+
+</div>
+
+</div>
+</div>
+</main>
+
+
 <!-- OWNER -->
 
 <main id="ownerView"
@@ -596,12 +636,29 @@ class="text-sm text-slate-500 mt-1">
 
 </div>
 
+<div class="flex flex-wrap items-center gap-2">
+
+<div
+id="siteStatusBadge"
+class="px-4 py-3 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-black text-sm">
+🟢 الموقع مفتوح
+</div>
+
+<button
+id="siteToggleBtn"
+onclick="confirmToggleSite()"
+class="px-5 py-3 rounded-2xl bg-red-500/10 text-red-500 font-black">
+🔴 إغلاق الموقع
+</button>
+
 <button
 onclick="loadOwnerData()"
 class="px-5 py-3 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-black"
 data-i18n="refresh">
 🔄 تحديث
 </button>
+
+</div>
 
 </div>
 </section>
@@ -851,6 +908,9 @@ let selectedWorkerSubmissions = [];
 
 let modalAction = null;
 let workerRefreshTimer = null;
+let siteStatusTimer = null;
+
+let siteClosed = false;
 
 let lang =
 localStorage.getItem("elbob_language") || "ar";
@@ -967,7 +1027,20 @@ workerEnabled:"تم إعادة تفعيل العامل 🔄",
 workerDisabled:"تم تعطيل العامل 🚪",
 logoutSuccess:"تم تسجيل الخروج 👋",
 fileError:"تعذر فتح الملف",
-signedUrlError:"تعذر إنشاء رابط الملف"
+signedUrlError:"تعذر إنشاء رابط الملف",
+
+siteOpen:"🟢 الموقع مفتوح",
+siteClosed:"🔴 الموقع مغلق",
+closeSite:"🔴 إغلاق الموقع",
+openSite:"🟢 فتح الموقع",
+closeSiteTitle:"إغلاق الموقع",
+closeSiteText:"هل تريد إغلاق الموقع مؤقتًا أمام العمال؟",
+openSiteTitle:"فتح الموقع",
+openSiteText:"هل تريد فتح الموقع أمام العمال؟",
+siteClosedTitle:"الموقع مغلق مؤقتًا 🔒",
+siteClosedText:"الموقع متوقف حاليًا للصيانة أو لفترة مؤقتة.",
+siteClosedHint:"سيعود الموقع للعمل بمجرد فتحه من الإدارة.",
+siteStatusUpdated:"تم تحديث حالة الموقع ✅"
 },
 
 en:{
@@ -1072,7 +1145,20 @@ workerEnabled:"Worker enabled 🔄",
 workerDisabled:"Worker disabled 🚪",
 logoutSuccess:"Logged out 👋",
 fileError:"Unable to open file",
-signedUrlError:"Unable to create file link"
+signedUrlError:"Unable to create file link",
+
+siteOpen:"🟢 Site Open",
+siteClosed:"🔴 Site Closed",
+closeSite:"🔴 Close Site",
+openSite:"🟢 Open Site",
+closeSiteTitle:"Close Site",
+closeSiteText:"Do you want to temporarily close the site for workers?",
+openSiteTitle:"Open Site",
+openSiteText:"Do you want to open the site for workers?",
+siteClosedTitle:"Site Temporarily Closed 🔒",
+siteClosedText:"The site is currently unavailable for maintenance or a temporary pause.",
+siteClosedHint:"The site will be available again once the administration opens it.",
+siteStatusUpdated:"Site status updated ✅"
 }
 
 };
@@ -1092,6 +1178,7 @@ return translations[lang]?.[key] ||
 function applyTranslations(){
 
 document.documentElement.lang = lang;
+
 document.documentElement.dir =
 lang === "ar" ? "rtl" : "ltr";
 
@@ -1119,6 +1206,8 @@ document.getElementById("logoutBtn");
 
 if(logoutBtn)
 logoutBtn.textContent = t("logout");
+
+updateSiteControl();
 
 if(currentProfile?.role === "worker"){
 renderWorkerProfile();
@@ -1292,12 +1381,16 @@ document.getElementById("workerView")
 document.getElementById("ownerView")
 .classList.add("hidden-view");
 
+document.getElementById("maintenanceView")
+.classList.add("hidden-view");
+
 }
 
 
 function showAuth(){
 
 stopWorkerRefresh();
+stopSiteStatusRefresh();
 
 hideAllViews();
 
@@ -1314,6 +1407,217 @@ function showLoggedInHeader(){
 
 document.getElementById("logoutBtn")
 .classList.remove("hidden");
+
+}
+
+
+/* =========================================================
+   SITE STATUS
+========================================================= */
+
+async function loadSiteStatus(){
+
+const {data,error} =
+await db
+.from("site_settings")
+.select("is_closed")
+.eq("id",1)
+.maybeSingle();
+
+if(error){
+
+console.error("Site status error:",error);
+
+return siteClosed;
+
+}
+
+siteClosed =
+!!data?.is_closed;
+
+updateSiteControl();
+
+return siteClosed;
+
+}
+
+
+function updateSiteControl(){
+
+const button =
+document.getElementById("siteToggleBtn");
+
+const badge =
+document.getElementById("siteStatusBadge");
+
+if(button){
+
+button.textContent =
+siteClosed
+? t("openSite")
+: t("closeSite");
+
+button.className =
+siteClosed
+?
+"px-5 py-3 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-black"
+:
+"px-5 py-3 rounded-2xl bg-red-500/10 text-red-500 font-black";
+
+}
+
+if(badge){
+
+badge.textContent =
+siteClosed
+? t("siteClosed")
+: t("siteOpen");
+
+badge.className =
+siteClosed
+?
+"px-4 py-3 rounded-2xl bg-red-500/10 text-red-500 font-black text-sm"
+:
+"px-4 py-3 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-black text-sm";
+
+}
+
+}
+
+
+function confirmToggleSite(){
+
+if(currentProfile?.role !== "owner")
+return;
+
+openModal(
+siteClosed
+? t("openSiteTitle")
+: t("closeSiteTitle"),
+
+siteClosed
+? t("openSiteText")
+: t("closeSiteText"),
+
+toggleSiteClosed
+);
+
+}
+
+
+async function toggleSiteClosed(){
+
+if(!currentUser || currentProfile?.role !== "owner")
+return;
+
+const nextStatus =
+!siteClosed;
+
+const {error} =
+await db
+.from("site_settings")
+.update({
+is_closed:nextStatus,
+updated_at:new Date().toISOString(),
+updated_by:currentUser.id
+})
+.eq("id",1);
+
+if(error){
+
+toast(
+error.message || t("unknownError"),
+"error"
+);
+
+return;
+
+}
+
+siteClosed =
+nextStatus;
+
+updateSiteControl();
+
+toast(
+t("siteStatusUpdated"),
+"success"
+);
+
+}
+
+
+function showMaintenance(){
+
+stopWorkerRefresh();
+
+hideAllViews();
+
+document.getElementById("maintenanceView")
+.classList.remove("hidden-view");
+
+showLoggedInHeader();
+
+}
+
+
+function startSiteStatusRefresh(){
+
+stopSiteStatusRefresh();
+
+siteStatusTimer =
+setInterval(
+async()=>{
+
+if(!currentUser || !currentProfile)
+return;
+
+const previousStatus =
+siteClosed;
+
+const currentStatus =
+await loadSiteStatus();
+
+if(currentProfile.role === "owner"){
+
+updateSiteControl();
+
+return;
+
+}
+
+if(currentProfile.role === "worker"){
+
+if(currentStatus && !previousStatus){
+
+showMaintenance();
+
+}
+
+else if(!currentStatus && previousStatus){
+
+await showWorker();
+
+}
+
+}
+
+},
+15000
+);
+
+}
+
+
+function stopSiteStatusRefresh(){
+
+if(siteStatusTimer){
+
+clearInterval(siteStatusTimer);
+
+siteStatusTimer = null;
+
+}
 
 }
 
@@ -1608,10 +1912,27 @@ return;
 
 showLoggedInHeader();
 
-if(currentProfile.role === "owner")
+await loadSiteStatus();
+
+startSiteStatusRefresh();
+
+if(currentProfile.role === "owner"){
+
 await showOwner();
-else
+
+}else{
+
+if(siteClosed){
+
+showMaintenance();
+
+}else{
+
 await showWorker();
+
+}
+
+}
 
 }
 
@@ -1621,6 +1942,13 @@ await showWorker();
 ========================================================= */
 
 async function showWorker(){
+
+if(siteClosed){
+
+showMaintenance();
+return;
+
+}
 
 hideAllViews();
 
@@ -1732,8 +2060,6 @@ function cairoDateKey(value){
     let day = get("day");
     const hour = get("hour");
 
-    // اليوم يبدأ الساعة 3:00 صباحًا
-    // من 00:00 إلى 02:59 يتحسب على اليوم السابق
     if (hour < 3) {
 
         const previousDay = new Date(
@@ -1755,6 +2081,7 @@ function cairoDateKey(value){
         String(day).padStart(2, "0")
     ].join("-");
 }
+
 
 /* =========================================================
    LOAD WORKER SUBMISSIONS
@@ -1798,10 +2125,21 @@ stopWorkerRefresh();
 workerRefreshTimer =
 setInterval(
 async()=>{
+
 if(currentUser &&
 currentProfile?.role === "worker"){
-await loadWorkerSubmissions();
+
+if(siteClosed){
+
+showMaintenance();
+return;
+
 }
+
+await loadWorkerSubmissions();
+
+}
+
 },
 30000
 );
@@ -2115,6 +2453,21 @@ async function submitWork(event){
 
 event.preventDefault();
 
+await loadSiteStatus();
+
+if(siteClosed){
+
+showMaintenance();
+
+toast(
+t("siteClosedText"),
+"warning"
+);
+
+return;
+
+}
+
 const valid =
 Math.max(
 0,
@@ -2263,12 +2616,16 @@ hideAllViews();
 document.getElementById("ownerView")
 .classList.remove("hidden-view");
 
+updateSiteControl();
+
 await loadOwnerData();
 
 }
 
 
 async function loadOwnerData(){
+
+await loadSiteStatus();
 
 const workersResult =
 await db
@@ -2313,6 +2670,7 @@ submissionsResult.data || [];
 
 renderOwnerStats();
 renderWorkers();
+updateSiteControl();
 
 if(selectedWorker){
 
@@ -3230,15 +3588,20 @@ error.message || t("fileError"),
 async function logout(){
 
 stopWorkerRefresh();
+stopSiteStatusRefresh();
 
 await db.auth.signOut();
 
 currentUser = null;
 currentProfile = null;
+
 submissions = [];
 profiles = [];
+
 selectedWorker = null;
 selectedWorkerSubmissions = [];
+
+siteClosed = false;
 
 showAuth();
 
