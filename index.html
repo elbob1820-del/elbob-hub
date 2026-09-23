@@ -929,8 +929,47 @@ SUPABASE_KEY,
     auth:{
         persistSession:true,
         autoRefreshToken:true,
-        detectSessionInUrl:true
+        detectSessionInUrl:true,
+        flowType:"implicit"
     }
+});
+
+/* =========================================================
+   AUTH STATE CHANGE LISTENER
+   Handles email confirmation callback automatically.
+   When user clicks confirmation link -> redirected back
+   with tokens in URL hash -> Supabase picks them up ->
+   fires SIGNED_IN event -> we auto-enter the app.
+========================================================= */
+
+let authListenerReady = false;
+
+db.auth.onAuthStateChange(async(event, session)=>{
+
+    console.log("Auth event:", event);
+
+    if(event === "SIGNED_IN" && session && authListenerReady){
+
+        currentUser = session.user;
+
+        // Clean up the URL hash after successful confirmation
+        if(window.location.hash && window.location.hash.includes("access_token")){
+            history.replaceState(null, "", window.location.pathname);
+        }
+
+        toast(t("loginSuccess"), "success");
+
+        await enterApplication();
+
+    }
+
+    if(event === "SIGNED_OUT"){
+
+        currentUser = null;
+        currentProfile = null;
+
+    }
+
 });
 
 
@@ -1882,14 +1921,21 @@ data:{
 full_name,
 username,
 cash_number
-}
+},
+emailRedirectTo: window.location.origin + window.location.pathname
 }
 });
 
 if(error)
 throw error;
 
-// دايمًا نطلب تأكيد الإيميل بدون دخول تلقائي
+// Check if email confirmation is needed
+const needsConfirmation =
+!data.session ||
+(data.user && data.user.identities && data.user.identities.length === 0);
+
+if(needsConfirmation){
+// Email confirmation required - show message
 toast(
   lang === "ar"
     ? "✅ تم إنشاء الحساب! افتح إيميلك وأكد حسابك قبل الدخول."
@@ -1897,6 +1943,12 @@ toast(
   "success"
 );
 showAuthMode("login");
+}else{
+// No confirmation needed - auto login
+currentUser = data.user;
+toast(t("accountCreated"), "success");
+await enterApplication();
+}
 
 }catch(error){
 
@@ -3931,6 +3983,9 @@ applyTranslations();
 showAuthMode("login");
 
 await checkExistingSession();
+
+// Now allow auth listener to handle subsequent events (email confirmation, etc.)
+authListenerReady = true;
 
 }
 );
