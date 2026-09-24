@@ -361,7 +361,6 @@ class="text-sm text-slate-500 mt-1">
 
 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 w-full lg:w-auto">
 
-<!-- كارت سعر اليوم للعامل -->
 <div class="rounded-2xl bg-purple-500/10 border border-purple-500/20 px-4 py-4 min-w-[150px]">
 <p class="text-xs text-purple-600 dark:text-purple-300 font-bold" data-i18n="todayRateLabel">
 سعر الـ Valid اليوم
@@ -419,7 +418,6 @@ data-i18n="save">
 </section>
 
 
-<!-- إحصائيات العامل مع الفلوس التراكمية والتصفير -->
 <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
 
 <div class="rounded-3xl p-5 border border-emerald-500/20 bg-emerald-500/10">
@@ -643,7 +641,6 @@ class="text-sm text-slate-500 mt-1">
 
 <div class="flex flex-wrap items-center gap-3">
 
-<!-- حقل تحديد سعر اليوم للـ Owner -->
 <div class="flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10">
 <span class="text-xs font-bold text-slate-500">سعر الـ Valid اليوم:</span>
 <input
@@ -778,7 +775,6 @@ class="text-sm text-slate-500 mt-1">
 
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
 
-<!-- Valid المستحق فقط (يتصفر عند الدفع) -->
 <div class="rounded-2xl bg-blue-500/10 p-4 border border-blue-500/20">
 <p class="text-xs text-blue-600 dark:text-blue-300 font-bold">Valid قيد الحساب</p>
 <p id="selectedValid" class="text-2xl font-black mt-1 text-blue-600 dark:text-blue-300">0</p>
@@ -790,7 +786,6 @@ class="text-sm text-slate-500 mt-1">
 <p id="selectedLocked" class="text-xl font-black mt-1">0</p>
 </div>
 
-<!-- إجمالي الفلوس المستحقة التراكمية (تتصفر فور الدفع) -->
 <div class="rounded-2xl bg-emerald-500/15 p-4 border border-emerald-500/30">
 <p class="text-xs text-emerald-500 font-bold">المستحق للدفع 💵</p>
 <p id="selectedPendingMoney" class="text-2xl font-black mt-1 text-emerald-500">0.00 ج.م</p>
@@ -829,7 +824,6 @@ class="px-4 py-3 rounded-2xl font-black">
 
 </div>
 
-<!-- زر تصفير الحساب ودفع كل المستحقات بضغطة واحدة -->
 <button
 id="payAllBtn"
 onclick="confirmPayAllWorker()"
@@ -875,7 +869,6 @@ class="text-sm text-slate-500 dark:text-slate-400 mt-3 leading-7">
 هل أنت متأكد؟
 </p>
 
-<!-- حقل إدخال الملاحظات أو سبب الرفض -->
 <div id="modalInputContainer" class="hidden-view mt-4">
 <label class="block text-xs text-slate-400 mb-1" id="modalInputLabel">سبب الرفض (اختياري):</label>
 <textarea
@@ -929,49 +922,9 @@ SUPABASE_KEY,
     auth:{
         persistSession:true,
         autoRefreshToken:true,
-        detectSessionInUrl:true,
-        flowType:"implicit"
+        detectSessionInUrl:true
     }
 });
-
-/* =========================================================
-   AUTH STATE CHANGE LISTENER
-   Handles email confirmation callback automatically.
-   When user clicks confirmation link -> redirected back
-   with tokens in URL hash -> Supabase picks them up ->
-   fires SIGNED_IN event -> we auto-enter the app.
-========================================================= */
-
-let authListenerReady = false;
-
-db.auth.onAuthStateChange(async(event, session)=>{
-
-    console.log("Auth event:", event);
-
-    if(event === "SIGNED_IN" && session && authListenerReady){
-
-        currentUser = session.user;
-
-        // Clean up the URL hash after successful confirmation
-        if(window.location.hash && window.location.hash.includes("access_token")){
-            history.replaceState(null, "", window.location.pathname);
-        }
-
-        toast(t("loginSuccess"), "success");
-
-        await enterApplication();
-
-    }
-
-    if(event === "SIGNED_OUT"){
-
-        currentUser = null;
-        currentProfile = null;
-
-    }
-
-});
-
 
 /* =========================================================
    STATE
@@ -998,7 +951,6 @@ localStorage.getItem("elbob_language") || "ar";
 
 let theme =
 localStorage.getItem("elbob_theme") || "dark";
-
 
 /* =========================================================
    TRANSLATIONS
@@ -1268,13 +1220,11 @@ siteStatusUpdated:"Site status updated ✅"
 
 };
 
-
 function t(key){
 return translations[lang]?.[key] ||
        translations.ar[key] ||
        key;
 }
-
 
 /* =========================================================
    TRANSLATION
@@ -1332,7 +1282,6 @@ renderSelectedWorkerSubmissions();
 
 }
 
-
 /* =========================================================
    LANGUAGE
 ========================================================= */
@@ -1350,7 +1299,6 @@ lang
 applyTranslations();
 
 }
-
 
 /* =========================================================
    THEME
@@ -1372,7 +1320,6 @@ theme === "dark" ? "☀️" : "🌙";
 
 }
 
-
 function toggleTheme(){
 
 theme =
@@ -1386,7 +1333,6 @@ theme
 applyTheme();
 
 }
-
 
 /* =========================================================
    TOAST
@@ -1424,7 +1370,6 @@ container.appendChild(item);
 setTimeout(()=>item.remove(),3500);
 
 }
-
 
 /* =========================================================
    AUTH MODE
@@ -1470,7 +1415,6 @@ loginTab.className =
 
 }
 
-
 /* =========================================================
    VIEWS
 ========================================================= */
@@ -1491,7 +1435,6 @@ document.getElementById("maintenanceView")
 
 }
 
-
 function showAuth(){
 
 stopWorkerRefresh();
@@ -1507,14 +1450,12 @@ document.getElementById("logoutBtn")
 
 }
 
-
 function showLoggedInHeader(){
 
 document.getElementById("logoutBtn")
 .classList.remove("hidden");
 
 }
-
 
 /* =========================================================
    SITE STATUS & DAILY RATE
@@ -1539,7 +1480,6 @@ currentDailyRate = Number(data?.valid_price || 0);
 
 updateSiteControl();
 
-// تحديث عرض السعر للـ Owner والعامل
 const rateInput = document.getElementById("dailyRateInput");
 if(rateInput && document.activeElement !== rateInput){
 rateInput.value = currentDailyRate;
@@ -1553,7 +1493,6 @@ workerRateDisplay.textContent = currentDailyRate.toFixed(2) + " ج.م";
 return siteClosed;
 
 }
-
 
 function updateSiteControl(){
 
@@ -1575,7 +1514,7 @@ siteClosed
 ?
 "px-5 py-3 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-black"
 :
-"px-5 py-3 rounded-2xl bg-red-500/10 text-red-500 font-black";
+"px-5 py-3 rounded-2xl bg- red-500/10 text-red-500 font-black";
 
 }
 
@@ -1596,7 +1535,6 @@ siteClosed
 }
 
 }
-
 
 async function saveDailyRate(){
 
@@ -1626,7 +1564,6 @@ toast(t("rateSaved"), "success");
 
 }
 
-
 function confirmToggleSite(){
 
 if(currentProfile?.role !== "owner")
@@ -1647,7 +1584,6 @@ siteClosed ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
 );
 
 }
-
 
 async function toggleSiteClosed(){
 
@@ -1690,7 +1626,6 @@ t("siteStatusUpdated"),
 
 }
 
-
 function showMaintenance(){
 
 stopWorkerRefresh();
@@ -1703,7 +1638,6 @@ document.getElementById("maintenanceView")
 showLoggedInHeader();
 
 }
-
 
 function startSiteStatusRefresh(){
 
@@ -1752,7 +1686,6 @@ await showWorker();
 
 }
 
-
 function stopSiteStatusRefresh(){
 
 if(siteStatusTimer){
@@ -1764,7 +1697,6 @@ siteStatusTimer = null;
 }
 
 }
-
 
 /* =========================================================
    SESSION
@@ -1806,7 +1738,6 @@ showAuth();
 }
 
 }
-
 
 /* =========================================================
    LOGIN
@@ -1870,7 +1801,6 @@ button.textContent = t("loginButton");
 
 }
 
-
 /* =========================================================
    REGISTER
 ========================================================= */
@@ -1921,33 +1851,33 @@ data:{
 full_name,
 username,
 cash_number
-},
-emailRedirectTo: window.location.origin + window.location.pathname
+}
 }
 });
 
 if(error)
 throw error;
 
-// Check if email confirmation is needed
-const needsConfirmation =
-!data.session ||
-(data.user && data.user.identities && data.user.identities.length === 0);
+if(data.session){
 
-if(needsConfirmation){
-// Email confirmation required - show message
-toast(
-  lang === "ar"
-    ? "✅ تم إنشاء الحساب! افتح إيميلك وأكد حسابك قبل الدخول."
-    : "✅ Account created! Check your email to confirm before logging in.",
-  "success"
-);
-showAuthMode("login");
-}else{
-// No confirmation needed - auto login
 currentUser = data.user;
-toast(t("accountCreated"), "success");
+toast(t("loginSuccess"),"success");
 await enterApplication();
+
+}else{
+
+const loginRes = await db.auth.signInWithPassword({
+email,
+password
+});
+
+if(loginRes.error)
+throw loginRes.error;
+
+currentUser = loginRes.data.user;
+toast(t("loginSuccess"),"success");
+await enterApplication();
+
 }
 
 }catch(error){
@@ -1968,7 +1898,6 @@ t("registerButton");
 }
 
 }
-
 
 /* =========================================================
    PROFILE
@@ -2016,7 +1945,6 @@ return false;
 }
 
 }
-
 
 /* =========================================================
    ENTER APPLICATION
@@ -2082,7 +2010,6 @@ await showWorker();
 
 }
 
-
 /* =========================================================
    WORKER
 ========================================================= */
@@ -2108,7 +2035,6 @@ await loadWorkerSubmissions();
 startWorkerRefresh();
 
 }
-
 
 function renderWorkerProfile(){
 
@@ -2143,7 +2069,6 @@ workerRateDisplay.textContent = currentDailyRate.toFixed(2) + " ج.م";
 }
 
 }
-
 
 /* =========================================================
    SAVE CASH
@@ -2183,7 +2108,6 @@ toast(t("cashSaved"),"success");
 
 }
 
-
 /* =========================================================
    COPY CASH (FOR OWNER)
 ========================================================= */
@@ -2210,7 +2134,6 @@ toast(t("cashCopied"),"success");
 });
 
 }
-
 
 /* =========================================================
    DATE (CAIRO CUTOFF 3 AM)
@@ -2261,7 +2184,6 @@ function cairoDateKey(value){
     ].join("-");
 }
 
-
 /* =========================================================
    LOAD WORKER SUBMISSIONS
 ========================================================= */
@@ -2291,7 +2213,6 @@ renderWorkerStats();
 renderWorkerSubmissions();
 
 }
-
 
 /* =========================================================
    REFRESH
@@ -2325,7 +2246,6 @@ await loadWorkerSubmissions();
 
 }
 
-
 function stopWorkerRefresh(){
 
 if(workerRefreshTimer){
@@ -2338,7 +2258,6 @@ workerRefreshTimer = null;
 
 }
 
-
 /* =========================================================
    WORKER STATS (الفاليد غير المدفوع والفلوس المستحقة)
 ========================================================= */
@@ -2350,8 +2269,8 @@ cairoDateKey();
 
 let todayValid = 0;
 let todayLocked = 0;
-let unpaidValid = 0; // يتصفر فور الدفع
-let pendingMoney = 0; // الفلوس التراكمية المستحقة وتتصفر فور الدفع
+let unpaidValid = 0;
+let pendingMoney = 0;
 
 submissions.forEach(row=>{
 
@@ -2364,12 +2283,10 @@ todayValid += valid;
 todayLocked += locked;
 }
 
-// فقط التسليمات المقبولة أو قيد المراجعة التي لم تُدفع بعد
 if(row.status !== "rejected" && row.payment_status !== "paid"){
 unpaidValid += valid;
 }
 
-// حساب الفلوس المستحقة للتسليمات المقبولة غير المدفوعة
 if(row.status === "approved" && row.payment_status !== "paid"){
 const price = Number(row.total_price || (valid * (row.unit_price || currentDailyRate)));
 pendingMoney += price;
@@ -2384,11 +2301,10 @@ const d = document.getElementById("workerPendingMoney");
 
 if(a) a.textContent = todayValid;
 if(b) b.textContent = todayLocked;
-if(c) c.textContent = unpaidValid; // يتصفر فور دفع الأونر
-if(d) d.textContent = pendingMoney.toFixed(2) + " ج.م"; // يتصفر فور الدفع
+if(c) c.textContent = unpaidValid;
+if(d) d.textContent = pendingMoney.toFixed(2) + " ج.م";
 
 }
-
 
 /* =========================================================
    STATUS BADGE
@@ -2424,7 +2340,6 @@ ${t("pending")}
 
 }
 
-
 /* =========================================================
    PAYMENT BADGE
 ========================================================= */
@@ -2454,7 +2369,6 @@ ${t("paymentPending")}
 return "";
 
 }
-
 
 /* =========================================================
    WORKER SUBMISSIONS
@@ -2509,7 +2423,7 @@ return `
 
 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
 
-<div>
+<div class="flex flex-col">
 
 <div class="flex flex-wrap items-center gap-2">
 
@@ -2522,7 +2436,6 @@ ${paymentBadge(row)}
 📅 ${date}
 </p>
 
-<!-- عرض سعر التسليمة والفلوس -->
 <div class="flex items-center gap-3 mt-3 text-xs">
 <span class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-black/30 font-bold">
 سعر الـ Valid: <strong class="text-purple-500">${unitPrice.toFixed(2)} ج.م</strong>
@@ -2624,12 +2537,13 @@ ${t("checkerButton")}
 </div>
 
 </div>
+</div>
+
 `;
 
 }).join("");
 
 }
-
 
 /* =========================================================
    SUBMIT WORK
@@ -2686,17 +2600,20 @@ toast(t("chooseChecker"),"warning");
 return;
 }
 
-// الحد الأقصى: 10 ميجا لملف الـ TXT (يشيل ملايين السطور) و 20 ميجا لصورة الشيكر
-const MAX_TXT_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_IMG_SIZE = 20 * 1024 * 1024; // 20MB
+// ---------- NEW LIMITS ----------
+const MAX_TXT_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_IMG_SIZE = 20 * 1024 * 1024; // 20 MB
 
 if(workFile.size > MAX_TXT_SIZE){
+toast(lang === "ar" ? "حجم ملف TXT كبير جداً (الحد الأقصى 10 ميجا)" : "TXT file too large (max 10MB)", "warning");
 return;
 }
 
 if(proofFile.size > MAX_IMG_SIZE){
+toast(lang === "ar" ? "حجم صورة الـ Checker كبير جداً (الحد الأقصى 20 ميجا)" : "Image too large (max 20MB)", "warning");
 return;
 }
+// ----------------------------------
 
 const button =
 document.getElementById("submitWorkBtn");
@@ -2798,7 +2715,6 @@ t("submitWork");
 
 }
 
-
 /* =========================================================
    OWNER
 ========================================================= */
@@ -2815,7 +2731,6 @@ updateSiteControl();
 await loadOwnerData();
 
 }
-
 
 async function loadOwnerData(){
 
@@ -2893,7 +2808,6 @@ document.getElementById(
 
 }
 
-
 /* =========================================================
    OWNER STATS
 ========================================================= */
@@ -2934,7 +2848,6 @@ unpaid;
 
 }
 
-
 /* =========================================================
    WORKERS (GRID)
 ========================================================= */
@@ -2968,7 +2881,6 @@ submissions.filter(
 s=>s.worker_id === worker.id
 );
 
-// فقط المقبول وغير المدفوع لحساب الفاليد التراكمي المستحق (يتصفر عند الدفع)
 const unpaidApproved =
 workerSubs.filter(
 s=>s.status === "approved" && s.payment_status !== "paid"
@@ -3029,7 +2941,6 @@ worker.active
 
 <div class="grid grid-cols-3 gap-2 mt-5">
 
-<!-- الفاليد غير المدفوع (يتصفر فور الدفع) -->
 <div class="rounded-2xl bg-blue-500/10 p-3">
 <p class="text-[11px] text-blue-600 dark:text-blue-300 font-bold">
 Valid مستحق
@@ -3037,7 +2948,6 @@ Valid مستحق
 <p class="font-black text-lg mt-1 text-blue-600 dark:text-blue-300">${unpaidValid}</p>
 </div>
 
-<!-- الفلوس المستحقة التراكمية (تتصفر فور الدفع) -->
 <div class="rounded-2xl bg-emerald-500/15 p-3">
 <p class="text-[11px] text-emerald-500 font-bold">
 المستحق
@@ -3081,7 +2991,6 @@ ${worker.active ? "🚪" : "🔄"}
 
 }
 
-
 /* =========================================================
    OPEN WORKER
 ========================================================= */
@@ -3118,7 +3027,6 @@ renderSelectedWorkerSubmissions();
 
 }
 
-
 /* =========================================================
    SELECTED WORKER (HEADER & STATS)
 ========================================================= */
@@ -3145,13 +3053,11 @@ document.getElementById(
 ).textContent =
 worker.cash_number || t("noCash");
 
-// الفلوس والفاليد غير المدفوع (المستحق حالياً)
 const unpaidApproved =
 selectedWorkerSubmissions.filter(
 s=>s.status === "approved" && s.payment_status !== "paid"
 );
 
-// الفاليد غير المدفوع (يتصفر فور الدفع)
 const unpaidValid =
 unpaidApproved.reduce(
 (sum,s)=>
@@ -3159,7 +3065,6 @@ sum + Number(s.valid_count || 0),
 0
 );
 
-// الفلوس التراكمية المستحقة (تتصفر فور الدفع)
 const pendingMoney =
 unpaidApproved.reduce(
 (sum,s)=>
@@ -3167,7 +3072,6 @@ sum + Number(s.total_price || (Number(s.valid_count || 0) * Number(s.unit_price 
 0
 );
 
-// إجمالي ما تم دفعه في التاريخ
 const paidSubmissions =
 selectedWorkerSubmissions.filter(
 s=>s.payment_status === "paid"
@@ -3187,12 +3091,11 @@ sum + Number(s.locked_count || 0),
 0
 );
 
-document.getElementById("selectedValid").textContent = unpaidValid; // يتصفر فور الدفع
+document.getElementById("selectedValid").textContent = unpaidValid;
 document.getElementById("selectedLocked").textContent = locked;
-document.getElementById("selectedPendingMoney").textContent = pendingMoney.toFixed(2) + " ج.م"; // يتصفر فور الدفع
+document.getElementById("selectedPendingMoney").textContent = pendingMoney.toFixed(2) + " ج.م";
 document.getElementById("selectedPaidMoney").textContent = totalPaidMoney.toFixed(2) + " ج.م";
 
-// تحديث نص زر الدفع الشامل
 const payAllBtn = document.getElementById("payAllBtn");
 if(payAllBtn){
 payAllBtn.disabled = pendingMoney <= 0;
@@ -3224,7 +3127,6 @@ toggle.className =
 }
 
 }
-
 
 /* =========================================================
    OWNER SUBMISSIONS (WITH PRICE BREAKDOWN)
@@ -3289,13 +3191,12 @@ ${paymentBadge(row)}
 📅 ${date}
 </p>
 
-<!-- تفاصيل سعر التسليمة والفلوس المعتمدة -->
 <div class="flex flex-wrap items-center gap-3 mt-3">
 <div class="px-3.5 py-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-300 text-xs font-black">
 السعر: ${unitPrice.toFixed(2)} ج.م
 </div>
 <div class="px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 text-xs font-black">
-إجمالي المبلغ: ${totalPrice.toFixed(2)} ج.م
+الإجمالي: ${totalPrice.toFixed(2)} ج.م
 </div>
 </div>
 
@@ -3437,7 +3338,6 @@ ${t("delete")}
 
 }
 
-
 /* =========================================================
    REVIEW
 ========================================================= */
@@ -3469,7 +3369,9 @@ openModal(
 t("approveConfirmTitle"),
 t("approveConfirm"),
 async()=>{
+
 await executeReview(id,"approved","");
+
 },
 false,
 "bg-emerald-600 text-white"
@@ -3481,7 +3383,9 @@ openModal(
 t("rejectConfirmTitle"),
 t("rejectConfirmText"),
 async(note)=>{
+
 await executeReview(id,"rejected",note);
+
 },
 true,
 "bg-red-600 text-white"
@@ -3490,7 +3394,6 @@ true,
 }
 
 }
-
 
 async function executeReview(id,status,note=""){
 
@@ -3523,7 +3426,6 @@ status === "approved"
 await loadOwnerData();
 
 }
-
 
 /* =========================================================
    PAYMENT (INDIVIDUAL)
@@ -3573,7 +3475,6 @@ false,
 
 }
 
-
 /* =========================================================
    PAY ALL SUBMISSIONS & RESET COUNTER (تصفير الفاليد ودفع الكل)
 ========================================================= */
@@ -3588,6 +3489,7 @@ const name = selectedWorker.full_name || selectedWorker.username || "-";
 openModal(
 t("payAllTitle"),
 `${t("payAllText")}\nالعامل: ${name}`,
+
 async()=>{
 
 const {error} =
@@ -3613,7 +3515,6 @@ false,
 );
 
 }
-
 
 /* =========================================================
    DELETE
@@ -3663,7 +3564,6 @@ false,
 
 }
 
-
 /* =========================================================
    WORKER ACTIVE
 ========================================================= */
@@ -3689,10 +3589,12 @@ openModal(
 t("disableWorker"),
 `${t("disableWorkerText")}\n${name}`,
 async()=>{
+
 await setWorkerActive(
 workerId,
 false
 );
+
 },
 false,
 "bg-red-600 text-white"
@@ -3703,11 +3605,14 @@ false,
 openModal(
 t("enableWorker"),
 `${t("enableWorkerText")}\n${name}`,
+
 async()=>{
+
 await setWorkerActive(
 workerId,
 true
 );
+
 },
 false,
 "bg-emerald-600 text-white"
@@ -3716,7 +3621,6 @@ false,
 }
 
 }
-
 
 function toggleSelectedWorker(){
 
@@ -3728,7 +3632,6 @@ selectedWorker.id
 );
 
 }
-
 
 async function setWorkerActive(workerId,active){
 
@@ -3762,7 +3665,6 @@ active
 await loadOwnerData();
 
 }
-
 
 /* =========================================================
    MODAL
@@ -3812,7 +3714,6 @@ await fn(inputValue);
 
 }
 
-
 function closeModal(){
 
 document.getElementById(
@@ -3824,7 +3725,6 @@ document.getElementById("modalInputContainer").classList.add("hidden-view");
 modalAction = null;
 
 }
-
 
 /* =========================================================
    STORAGE
@@ -3869,7 +3769,6 @@ error.message || t("fileError"),
 
 }
 
-
 /* =========================================================
    LOGOUT
 ========================================================= */
@@ -3905,7 +3804,6 @@ t("logoutSuccess"),
 
 }
 
-
 /* =========================================================
    HELPERS
 ========================================================= */
@@ -3930,7 +3828,6 @@ minute:"2-digit"
 
 }
 
-
 function getFileExtension(name){
 
 if(!name)
@@ -3952,7 +3849,6 @@ return parts
 
 }
 
-
 function escapeHtml(value){
 
 if(value === null || value === undefined)
@@ -3966,7 +3862,6 @@ return String(value)
 .replace(/'/g,"&#039;");
 
 }
-
 
 /* =========================================================
    INIT
@@ -3984,12 +3879,8 @@ showAuthMode("login");
 
 await checkExistingSession();
 
-// Now allow auth listener to handle subsequent events (email confirmation, etc.)
-authListenerReady = true;
-
 }
 );
-
 
 document.getElementById(
 "confirmModal"
