@@ -146,6 +146,10 @@ class="w-10 h-10 rounded-xl bg-slate-200 dark:bg-white/10">
 ☀️
 </button>
 
+<div class="flex items-center gap-2">
+<button onclick="changePasswordPrompt()" id="changePassBtn" class="hidden px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 font-bold text-sm">
+🔐 تغيير الباسورد
+</button>
 <button
 onclick="logout()"
 id="logoutBtn"
@@ -153,6 +157,7 @@ class="hidden px-4 py-2 rounded-xl bg-red-500/10 text-red-500 border border-red-
 data-i18n="logout">
 خروج
 </button>
+</div>
 
 </div>
 </div>
@@ -4283,9 +4288,38 @@ window.toggleWorkerTab = function(tab) {
     
     renderWorkerSubmissions();
 };
+
+// Owner can reset any worker's password
+window.ownerResetWorkerPassword = async function(workerId) {
+    const worker = profiles.find(p => p.id === workerId);
+    const name = worker ? (worker.full_name || worker.username) : '';
+    
+    openModal(
+        "تعيين باسورد جديد",
+        `أدخل الباسورد الجديد للعامل: ${name}`,
+        async (newPassword) => {
+            if(!newPassword || newPassword.length < 6) {
+                return toast("الباسورد يجب أن يكون 6 أحرف على الأقل", "warning");
+            }
+            const { error } = await db.rpc('admin_set_worker_password', {
+                p_worker_id: workerId,
+                p_new_password: newPassword
+            });
+            if(error) {
+                toast("لازم تعمل RPC في Supabase للـ admin_set_worker_password", "error");
+            } else {
+                toast(`✅ تم تغيير باسورد ${name} بنجاح!`, "success");
+            }
+        },
+        true,
+        "bg-indigo-600 text-white"
+    );
+};
 </script>
 </body>
 </html>
+
+
 
 
 
