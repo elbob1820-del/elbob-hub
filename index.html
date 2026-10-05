@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 
 <head>
@@ -1577,7 +1577,7 @@ updated_by: currentUser.id
 .eq("id", 1);
 
 if(error){
-toast(error.message || t("unknownError"), "error");
+let errorMsg = error.message; if(errorMsg === "Invalid login credentials") { errorMsg = "بيانات الدخول غير صحيحة، أو لم يتم تأكيد الحساب بعد."; } toast( errorMsg || t("unknownError"), "error" );
 return;
 }
 
@@ -1627,10 +1627,7 @@ updated_by:currentUser.id
 
 if(error){
 
-toast(
-error.message || t("unknownError"),
-"error"
-);
+let errorMsg = error.message; if(errorMsg === "Invalid login credentials") { errorMsg = "بيانات الدخول غير صحيحة، أو لم يتم تأكيد الحساب بعد."; } toast( errorMsg || t("unknownError"), "error" );
 
 return;
 
@@ -1750,10 +1747,7 @@ await enterApplication();
 
 console.error(error);
 
-toast(
-error.message || t("unknownError"),
-"error"
-);
+let errorMsg = error.message; if(errorMsg === "Invalid login credentials") { errorMsg = "بيانات الدخول غير صحيحة، أو لم يتم تأكيد الحساب بعد."; } toast( errorMsg || t("unknownError"), "error" );
 
 showAuth();
 
@@ -1809,10 +1803,7 @@ await enterApplication();
 
 console.error(error);
 
-toast(
-error.message || t("unknownError"),
-"error"
-);
+let errorMsg = error.message; if(errorMsg === "Invalid login credentials") { errorMsg = "بيانات الدخول غير صحيحة، أو لم يتم تأكيد الحساب بعد."; } toast( errorMsg || t("unknownError"), "error" );
 
 }finally{
 
@@ -1886,30 +1877,13 @@ currentUser = data.user;
 toast(t("loginSuccess"),"success");
 await enterApplication();
 
-}else{
-
-const loginRes = await db.auth.signInWithPassword({
-email,
-password
-});
-
-if(loginRes.error)
-throw loginRes.error;
-
-currentUser = loginRes.data.user;
-toast(t("loginSuccess"),"success");
-await enterApplication();
-
-}
+}else{ toast("تم إنشاء الحساب بنجاح! يرجى مراجعة بريدك الإلكتروني لتفعيل الحساب.", "success"); }
 
 }catch(error){
 
 console.error(error);
 
-toast(
-error.message || t("unknownError"),
-"error"
-);
+let errorMsg = error.message; if(errorMsg === "Invalid login credentials") { errorMsg = "بيانات الدخول غير صحيحة، أو لم يتم تأكيد الحساب بعد."; } toast( errorMsg || t("unknownError"), "error" );
 
 }finally{
 
