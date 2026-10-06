@@ -653,21 +653,17 @@ class="text-sm text-slate-500 mt-1">
 
 <div class="flex flex-wrap items-center gap-3">
 
-<div class="flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10">
-<span class="text-xs font-bold text-slate-500">سعر الـ Valid اليوم:</span>
-<input
-id="dailyRateInput"
-type="number"
-step="0.25"
-min="0"
-placeholder="0.00"
-class="w-20 bg-transparent text-center font-black outline-none ltr-input">
+<div class="flex items-center gap-2 px-3 py-2 rounded-2xl bg-purple-500/10 border border-purple-500/20">
+<span class="text-xs font-bold text-purple-400">🟣 سعر يزيد:</span>
+<input id="yazeedRateInput" type="number" step="0.1" min="0" placeholder="0.00" class="w-16 bg-transparent text-center font-black outline-none ltr-input">
 <span class="text-xs font-bold text-slate-400">ج.م</span>
-<button
-onclick="saveDailyRate()"
-class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs transition">
-حفظ السعر 💾
-</button>
+<button onclick="saveToolRates()" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs transition">حفظ 💾</button>
+</div>
+<div class="flex items-center gap-2 px-3 py-2 rounded-2xl bg-orange-500/10 border border-orange-500/20">
+<span class="text-xs font-bold text-orange-400">⚡ سعر الطيب:</span>
+<input id="tayebRateInput" type="number" step="0.1" min="0" placeholder="0.00" class="w-16 bg-transparent text-center font-black outline-none ltr-input">
+<span class="text-xs font-bold text-slate-400">ج.م</span>
+<button onclick="saveToolRates()" class="px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs transition">حفظ 💾</button>
 </div>
 
 <div
@@ -1509,7 +1505,7 @@ if(tInput && document.activeElement !== tInput) tInput.value = window.tayebPrice
 
 const workerRateDisplay = document.getElementById("workerRateDisplay");
 if(workerRateDisplay){
-    workerRateDisplay.innerHTML = `<span class="text-purple-500 text-[10px] md:text-sm">يزيد (شرائح: 1.2 / 1.3 / 1.4)</span> | <span class="text-orange-500">الطيب: ${window.tayebPrice.toFixed(2)}</span> ج.م`;
+    workerRateDisplay.innerHTML = `<span class="text-purple-500 text-[10px] md:text-sm">يزيد: ${window.yazeedPrice.toFixed(2)}</span> | <span class="text-orange-500">الطيب: ${window.tayebPrice.toFixed(2)}</span> ج.م`;
 }
 
 return siteClosed;
@@ -1586,6 +1582,25 @@ toast(t("rateSaved"), "success");
 
 }
 
+
+async function saveToolRates(){
+if(!currentUser || currentProfile?.role !== "owner") return;
+const yInput = document.getElementById("yazeedRateInput");
+const tInput = document.getElementById("tayebRateInput");
+const yazeedRate = Math.max(0, Number(yInput?.value || 0));
+const tayebRate = Math.max(0, Number(tInput?.value || 0));
+const {error} = await db.from("site_settings").update({
+yazeed_price: yazeedRate,
+tayeb_price: tayebRate,
+valid_price: yazeedRate,
+updated_at: new Date().toISOString(),
+updated_by: currentUser.id
+}).eq("id", 1);
+if(error){ toast(error.message || "خطأ", "error"); return; }
+window.yazeedPrice = yazeedRate;
+window.tayebPrice = tayebRate;
+toast("✅ تم حفظ الأسعار بنجاح!", "success");
+}
 function confirmToggleSite(){
 
 if(currentProfile?.role !== "owner")
