@@ -235,12 +235,10 @@ class="block mb-2 text-sm font-bold">
 كلمة المرور
 </label>
 
-<input
-id="loginPassword"
-type="password"
-required
-placeholder="••••••••"
-class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+<div class="relative">
+<input id="loginPassword" type="password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+<button type="button" onclick="togglePasswordVisibility('loginPassword', this)" class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition text-lg select-none">👁</button>
+</div>
 <div class="mt-2 text-right">
     <button type="button" onclick="window.forgotPasswordPrompt()" class="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition">
         نسيت كلمة المرور؟ 🔑
@@ -321,13 +319,10 @@ class="block mb-2 text-sm font-bold">
 كلمة المرور
 </label>
 
-<input
-id="regPassword"
-type="password"
-minlength="6"
-required
-placeholder="6 أحرف على الأقل"
-class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+<div class="relative">
+<input id="regPassword" type="password" minlength="6" required placeholder="6 أحرف على الأقل" class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none ltr-input">
+<button type="button" onclick="togglePasswordVisibility('regPassword', this)" class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition text-lg select-none">👁</button>
+</div>
 </div>
 
 <button
@@ -4514,6 +4509,18 @@ window.changePasswordPrompt = function() {
 
 window.closePasswordModal = function() {
     document.getElementById("passwordModal").classList.add("hidden");
+};
+
+window.togglePasswordVisibility = function(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        btn.textContent = '👁';
+    }
 };
 
 window.submitPasswordChange = async function() {
