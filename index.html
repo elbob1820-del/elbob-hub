@@ -835,6 +835,11 @@ onclick="toggleSelectedWorker()"
 class="px-4 py-3 rounded-2xl font-black">
 -
 </button>
+<button
+id="resetWorkerPwdBtn"
+class="px-4 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black transition">
+🔑 تغيير الباسورد
+</button>
 
 </div>
 
@@ -4080,12 +4085,18 @@ function injectAccountingSection() {
                 <h2 class="text-2xl font-black">💰 كشف الحساب التفصيلي</h2>
                 <p class="text-sm text-slate-500 mt-1">عرض كل التسليمات مقسمة بالأداة مع إجمالي المستحقات</p>
             </div>
-            <div class="flex gap-2 flex-wrap">
-                <button onclick="renderAccounting('all')" id="acc-all" class="px-4 py-2 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold text-sm">🌟 الكل</button>
-                <button onclick="renderAccounting('yazeed')" id="acc-yazeed" class="px-4 py-2 rounded-xl bg-purple-500/10 text-purple-500 font-bold text-sm border border-purple-500/20">🟣 أداة يزيد</button>
-                <button onclick="renderAccounting('tayeb')" id="acc-tayeb" class="px-4 py-2 rounded-xl bg-orange-500/10 text-orange-500 font-bold text-sm border border-orange-500/20">⚡ أداة الطيب</button>
-                <button onclick="renderAccounting('pending')" id="acc-pending" class="px-4 py-2 rounded-xl bg-yellow-500/10 text-yellow-500 font-bold text-sm border border-yellow-500/20">⏳ قيد الحساب</button>
-            </div>
+            <div class="flex flex-col gap-3">
+    <div class="flex gap-2 flex-wrap items-center">
+        <input type="date" id="accDateFilter" onchange="renderAccounting(currentAccFilter)" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none text-sm font-bold ltr-input" title="فلترة بيوم معين">
+        <button onclick="document.getElementById('accDateFilter').value=''; renderAccounting(currentAccFilter);" class="px-2 py-2 rounded-xl bg-red-500/10 text-red-500 font-bold text-sm hover:bg-red-500/20" title="إلغاء التاريخ">✖</button>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+        <button onclick="renderAccounting('all')" id="acc-all" class="px-4 py-2 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold text-sm">🌍 الكل</button>
+        <button onclick="renderAccounting('yazeed')" id="acc-yazeed" class="px-4 py-2 rounded-xl bg-purple-500/10 text-purple-500 font-bold text-sm border border-purple-500/20">🟣 أداة يزيد</button>
+        <button onclick="renderAccounting('tayeb')" id="acc-tayeb" class="px-4 py-2 rounded-xl bg-orange-500/10 text-orange-500 font-bold text-sm border border-orange-500/20">⚡ أداة الطيب</button>
+        <button onclick="renderAccounting('pending')" id="acc-pending" class="px-4 py-2 rounded-xl bg-yellow-500/10 text-yellow-500 font-bold text-sm border border-yellow-500/20">⏳ قيد الحساب</button>
+    </div>
+</div>
         </div>
 
         <!-- Summary Cards -->
@@ -4125,6 +4136,16 @@ function loadAllSubmissionsForAccounting() {
     if(!summaryEl || !tableEl) return;
 
     let rows = submissions || [];
+    
+    const dateInput = document.getElementById("accDateFilter");
+    if(dateInput && dateInput.value) {
+        const selectedDate = dateInput.value; // YYYY-MM-DD
+        rows = rows.filter(r => {
+            if(!r.created_at) return false;
+            // Extract YYYY-MM-DD from created_at
+            return r.created_at.startsWith(selectedDate);
+        });
+    }
 
     // Filter
     if(currentAccFilter === 'yazeed') rows = rows.filter(r => !r.tool_name || r.tool_name === 'yazeed');
@@ -4214,6 +4235,10 @@ function loadAllSubmissionsForAccounting() {
                     <p class="text-xs text-slate-500">الإجمالي</p>
                     <p class="font-black">${totalP.toFixed(2)} ج.م</p>
                 </div>
+            </div>
+            <div class="flex items-center gap-2">
+                ${r.work_file ? `<a href="${r.work_file}" download target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs font-black hover:bg-slate-200 dark:hover:bg-white/10 transition">📄 ملف TXT</a>` : ''}
+                ${r.proof_image ? `<a href="${r.proof_image}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs font-black hover:bg-slate-200 dark:hover:bg-white/10 transition">🖼️ الصورة</a>` : ''}
             </div>
         </div>`;
     }).join('');
@@ -4307,6 +4332,9 @@ window.ownerResetWorkerPassword = async function(workerId) {
     const worker = profiles.find(p => p.id === workerId);
     const name = worker ? (worker.full_name || worker.username) : '';
     
+    
+    document.getElementById("modalInputLabel").textContent = "الباسورد الجديد (6 حروف أو أرقام على الأقل):";
+    document.getElementById("modalInput").placeholder = "اكتب الباسورد الجديد هنا...";
     openModal(
         "تعيين باسورد جديد",
         `أدخل الباسورد الجديد للعامل: ${name}`,
@@ -4386,6 +4414,9 @@ window.submitPasswordChange = async function() {
         closePasswordModal();
         toast("✅ تم تغيير كلمة المرور بنجاح!", "success");
     }
+            // Reset labels back to default
+            document.getElementById("modalInputLabel").textContent = "سبب الرفض (اختياري):";
+            document.getElementById("modalInput").placeholder = "اكتب سبب الرفض هنا...";
 };
 
 // Close modal on background click
