@@ -17,7 +17,8 @@ tailwind.config = {
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -756,7 +757,9 @@ class="text-sm text-slate-500">
 </p>
 
 </div>
-
+<div class="mb-4">
+    <input type="text" id="workerSearchInput" onkeyup="renderWorkers()" placeholder="🔍 ابحث عن عميل (بالاسم أو اليوزر)..." class="w-full md:w-1/2 px-4 py-3 rounded-2xl bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 font-bold outline-none transition focus:border-indigo-500">
+</div>
 <div id="workersGrid"
 class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
 
@@ -2675,13 +2678,36 @@ document.getElementById("submitWorkBtn");
 
 button.disabled = true;
 
-button.innerHTML =
-`<span class="inline-flex items-center gap-2">
-<span class="loader"></span>
-${t("uploadLoading")}
-</span>`;
+button.innerHTML = `<span class="inline-flex items-center gap-2"><span class="loader"></span> جاري فحص الصورة بالذكاء الاصطناعي... </span>`;
 
-try{
+try {
+    const tWorker = await Tesseract.createWorker('eng');
+    const ret = await tWorker.recognize(proofFile);
+    const text = ret.data.text.toLowerCase();
+    await tWorker.terminate();
+
+    const lines = text.split('\n');
+    let extractedNumbers = [];
+
+    for (let line of lines) {
+        let cleanLine = line.replace(/invalid|unverified|non/gi, 'inv');
+        if (cleanLine.includes('valid')) {
+            const matches = cleanLine.match(/\d+/g);
+            if (matches) {
+                matches.forEach(m => extractedNumbers.push(parseInt(m, 10)));
+            }
+        }
+    }
+
+    if (!extractedNumbers.includes(valid)) {
+        toast(`الرقم اللي كتبته (${valid}) مش مطابق للي موجود في الصورة! الأرقام المقروءة: ` + (extractedNumbers.join(', ') || "لم يتم العثور على أرقام"), "error");
+        button.disabled = false;
+        button.textContent = t("submitWork");
+        return;
+    }
+
+    button.innerHTML = `<span class="inline-flex items-center gap-2"><span class="loader"></span> ${t("uploadLoading")} </span>`;
+
 
 const id =
 crypto.randomUUID();
@@ -2970,8 +2996,22 @@ return;
 
 }
 
-container.innerHTML =
-profiles.map(worker=>{
+    const searchInput = document.getElementById("workerSearchInput");
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+    
+    const filteredProfiles = profiles.filter(worker => {
+        if(!query) return true;
+        const n = (worker.full_name || "").toLowerCase();
+        const u = (worker.username || "").toLowerCase();
+        return n.includes(query) || u.includes(query);
+    });
+
+    if(filteredProfiles.length === 0) {
+        container.innerHTML = `<div class="md:col-span-2 xl:col-span-3 text-center py-10 text-slate-500 font-bold">لا يوجد عمال مطابقين للبحث 😢</div>`;
+        return;
+    }
+
+    container.innerHTML = filteredProfiles.map(worker=>{
 
 const workerSubs =
 submissions.filter(
