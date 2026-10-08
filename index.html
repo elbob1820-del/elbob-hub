@@ -693,7 +693,7 @@ data-i18n="refresh">
 </section>
 
 
-<section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-7">
+<section class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-7">
 
 <div class="rounded-3xl p-5 bg-blue-500/10 border border-blue-500/20">
 <p data-i18n="workers"
@@ -2482,6 +2482,7 @@ return `
 
 ${statusBadge(row.status)}
 ${paymentBadge(row)}
+${(row.tool_name === "tayeb") ? `<span class="px-2.5 py-1 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-black">⚡ الطيب</span>` : `<span class="px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-black">🟣 يزيد</span>`}
 
 </div>
 
@@ -2870,10 +2871,21 @@ function renderOwnerStats(){
     const unpaid = submissions.filter(s=>s.status === "approved" && s.payment_status !== "paid").length;
     const pending = submissions.filter(s=>s.status === "pending");
 
+    const todayKey = cairoDateKey();
+    let todayValidTotal = 0;
+    submissions.forEach(s => {
+        if (cairoDateKey(s.created_at) === todayKey && s.status === "approved" && s.payment_status !== "paid") {
+            todayValidTotal += Number(s.valid_count || 0);
+        }
+    });
+
     document.getElementById("ownerWorkersCount").textContent = profiles.length;
     document.getElementById("ownerSubmissionsCount").textContent = submissions.length;
     document.getElementById("ownerPaidCount").textContent = paid;
     document.getElementById("ownerUnpaidCount").textContent = unpaid;
+    if(document.getElementById("ownerTodayValid")) {
+        document.getElementById("ownerTodayValid").textContent = todayValidTotal;
+    }
 
     renderGlobalPending(pending);
 }
@@ -3117,6 +3129,11 @@ document.getElementById(
 ).textContent =
 "@" + (worker.username || "-");
 
+const resetBtn = document.getElementById("resetWorkerPwdBtn");
+if(resetBtn) {
+    resetBtn.onclick = () => window.ownerResetWorkerPassword(worker.id);
+}
+
 document.getElementById(
 "selectedCash"
 ).textContent =
@@ -3253,6 +3270,7 @@ return `
 
 ${statusBadge(row.status)}
 ${paymentBadge(row)}
+${(row.tool_name === "tayeb") ? `<span class="px-2.5 py-1 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-black">⚡ الطيب</span>` : `<span class="px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-black">🟣 يزيد</span>`}
 
 </div>
 
@@ -4241,21 +4259,20 @@ window.changePasswordPrompt = function() {
 
 window.forgotPasswordPrompt = function() {
     openModal(
-        "نسيت كلمة المرور",
-        "أدخل بريدك الإلكتروني لإرسال رابط إعادة التعيين:",
-        async (email) => {
-            if(!email) return toast("يرجى إدخال البريد الإلكتروني", "warning");
-            
-            const { error } = await db.auth.resetPasswordForEmail(email);
-            if(error) {
-                toast(error.message, "error");
-            } else {
-                toast("✅ تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني", "success");
-            }
+        "🔑 استرجاع كلمة المرور",
+        "نسيت الباسورد؟ كلم الأدمن وهيبعتلك الباسورد الجديد لحسابك فوراً 📢",
+        async (username) => {
+            document.getElementById("modalInputLabel").textContent = "سبب الرفض (اختياري):";
+            document.getElementById("modalInput").placeholder = "اكتب سبب الرفض هنا...";
+            if(!username) return toast("يرجى إدخال اسم المستخدم", "warning");
+            toast("✅ تم إرسال طلب استرجاع للأدمن بنجاح!", "success");
         },
         true, // show input
-        "bg-blue-600 text-white"
+        "bg-purple-600 text-white"
     );
+    document.getElementById("modalInputLabel").textContent = "اسم المستخدم الخاص بحسابك:";
+    document.getElementById("modalInput").placeholder = "أدخل اسم المستخدم";
+    document.getElementById("confirmBtn").textContent = "إرسال طلب استرجاع للأدمن ✉️";
 };
 
 window.currentWorkerTab = 'unpaid_all';
