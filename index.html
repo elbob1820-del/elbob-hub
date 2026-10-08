@@ -1301,6 +1301,10 @@ renderSelectedWorkerSubmissions();
 }
 }
 
+if(currentProfile?.role === "supervisor"){
+    showSupervisor();
+}
+
 }
 
 /* =========================================================
@@ -1454,8 +1458,10 @@ document.getElementById("ownerView")
 document.getElementById("maintenanceView")
 .classList.add("hidden-view");
 
-}
+const supView = document.getElementById("supervisorView");
+if(supView) supView.classList.add("hidden-view");
 
+}
 function showAuth(){
 
 stopWorkerRefresh();
@@ -4523,6 +4529,148 @@ window.togglePasswordVisibility = function(inputId, btn) {
     }
 };
 
+
+// =========================================================
+//   SUPERVISOR ROLE LOGIC
+// =========================================================
+
+async function showSupervisor() {
+    hideAllViews();
+    document.getElementById("supervisorView").classList.remove("hidden-view");
+    await loadSupervisorData();
+}
+
+async function loadSupervisorData() {
+    await loadSiteStatus();
+    
+    // Update status badge
+    const badge = document.getElementById("supStatusBadge");
+    if (badge) badge.textContent = siteClosed ? "🔴 الموقع مغلق" : "✅ الموقع شغال";
+
+    // Load all profiles (workers only)
+    const { data: profilesData } = await db.from("profiles").select("*").eq("role", "worker");
+    window.supProfiles = profilesData || [];
+
+    // Load all submissions
+    const { data: subsData } = await db.from("submissions").select("*").order("created_at", { ascending: false });
+    window.supSubmissions = subsData || [];
+
+    // Update stats
+    const el = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
+    el("supWorkersCount", supProfiles.length);
+    el("supSubmissionsCount", supSubmissions.length);
+    el("supPendingCount", supSubmissions.filter(s => s.status === "pending").length);
+    el("supApprovedCount", supSubmissions.filter(s => s.status === "approved").length);
+
+    renderSupervisorWorkers();
+}
+
+function renderSupervisorWorkers() {
+    const container = document.getElementById("supWorkersGrid");
+    if (!container) return;
+
+    const query = (document.getElementById("supWorkerSearch")?.value || "").toLowerCase().trim();
+    const filtered = (window.supProfiles || []).filter(w => {
+        if (!query) return true;
+        return (w.full_name || "").toLowerCase().includes(query) || (w.username || "").toLowerCase().includes(query);
+    });
+
+    if (!filtered.length) {
+        container.innerHTML = `<div class="md:col-span-3 text-center py-10 text-slate-500 font-bold">لا يوجد عمال 😢</div>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(worker => {
+        const subs = (window.supSubmissions || []).filter(s => s.worker_id === worker.id);
+        const pending = subs.filter(s => s.status === "pending").length;
+        const approved = subs.filter(s => s.status === "approved").length;
+        const rejected = subs.filter(s => s.status === "rejected").length;
+        return `
+        <div onclick="selectSupervisorWorker('${worker.id}')" class="cursor-pointer rounded-3xl p-5 bg-white dark:bg-white/[.04] border border-slate-200 dark:border-white/10 hover:border-indigo-400 transition">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-2xl">👷</div>
+                <div>
+                    <p class="font-black">${worker.full_name || worker.username}</p>
+                    <p class="text-xs text-slate-500">@${worker.username || ""}</p>
+                </div>
+                ${pending > 0 ? `<span class="mr-auto px-2 py-1 rounded-xl bg-orange-500/10 text-orange-500 text-xs font-black">${pending} بانتظار</span>` : ''}
+            </div>
+            <div class="flex gap-2 text-xs font-bold">
+                <span class="px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-500">⏳ ${pending}</span>
+                <span class="px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500">✅ ${approved}</span>
+                <span class="px-2 py-1 rounded-lg bg-red-500/10 text-red-500">❌ ${rejected}</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function selectSupervisorWorker(workerId) {
+    const worker = (window.supProfiles || []).find(w => w.id === workerId);
+    if (!worker) return;
+
+    document.getElementById("supSelectedWorkerName").textContent = worker.full_name || worker.username;
+    document.getElementById("supSelectedWorkerUsername").textContent = "@" + (worker.username || "");
+    document.getElementById("supSelectedWorkerSection").classList.remove("hidden-view");
+
+    const subs = (window.supSubmissions || []).filter(s => s.worker_id === workerId);
+    const container = document.getElementById("supWorkerSubmissions");
+
+    if (!subs.length) {
+        container.innerHTML = `<div class="text-center py-10 text-slate-500 font-bold">لا يوجد تسليمات لهذا العامل</div>`;
+        return;
+    }
+
+    container.innerHTML = subs.map(row => {
+        const tool = row.tool_name === "tayeb" ? `<span class="text-orange-500 font-black">⚡ الطيب</span>` : `<span class="text-purple-500 font-black">🟣 يزيد</span>`;
+        const date = row.created_at ? new Date(row.created_at).toLocaleString("ar-EG", {timeZone:"Africa/Cairo"}) : "";
+        let statusBadge = "";
+        if (row.status === "approved") statusBadge = `<span class="px-2 py-1 rounded-xl bg-emerald-500/10 text-emerald-500 text-xs font-black">✅ مقبول</span>`;
+        else if (row.status === "rejected") statusBadge = `<span class="px-2 py-1 rounded-xl bg-red-500/10 text-red-500 text-xs font-black">❌ مرفوض</span>`;
+        else statusBadge = `<span class="px-2 py-1 rounded-xl bg-yellow-500/10 text-yellow-500 text-xs font-black">⏳ انتظار</span>`;
+
+        const reviewBtns = row.status === "pending" ? `
+        <div class="flex gap-2 mt-3">
+            <button onclick="supReview('${row.id}','approved')" class="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-black hover:bg-emerald-700 transition">✅ قبول</button>
+            <button onclick="supReview('${row.id}','rejected')" class="px-3 py-1.5 rounded-xl bg-red-600 text-white text-xs font-black hover:bg-red-700 transition">❌ رفض</button>
+        </div>` : "";
+
+        return `
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-white/[.03] border border-slate-200 dark:border-white/10">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+                ${tool} ${statusBadge}
+                <span class="text-xs text-slate-500 mr-auto">${date}</span>
+            </div>
+            <div class="flex gap-4 text-sm font-bold">
+                <span>✅ Valid: <strong class="text-emerald-400">${row.valid_count || 0}</strong></span>
+                <span>🔒 Locked: <strong class="text-yellow-400">${row.locked_count || 0}</strong></span>
+            </div>
+            ${row.proof_image ? `<div class="mt-2"><button onclick="openStorageFile('proofs','${encodeURIComponent(row.proof_image)}')" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs font-black hover:bg-slate-200 dark:hover:bg-white/10 transition">🖼️ الصورة</button></div>` : ""}
+            ${reviewBtns}
+        </div>`;
+    }).join('');
+
+    setTimeout(() => document.getElementById("supSelectedWorkerSection").scrollIntoView({behavior:"smooth", block:"start"}), 100);
+}
+
+async function supReview(id, status) {
+    if (status === "rejected") {
+        openModal("رفض التسليمة", "هل أنت متأكد من رفض هذه التسليمة؟", async (note) => {
+            await executeReview(id, "rejected", note || "");
+            await loadSupervisorData();
+            // Re-select the same worker
+            const sub = (window.supSubmissions || []).find(s => s.id === id);
+            if (sub) selectSupervisorWorker(sub.worker_id);
+        }, true, "bg-red-600 text-white");
+    } else {
+        openModal("قبول التسليمة", "هل أنت متأكد من قبول هذه التسليمة؟", async () => {
+            await executeReview(id, "approved", "");
+            await loadSupervisorData();
+            const sub = (window.supSubmissions || []).find(s => s.id === id);
+            if (sub) selectSupervisorWorker(sub.worker_id);
+        }, false, "bg-emerald-600 text-white");
+    }
+}
+
 window.submitPasswordChange = async function() {
     const newPass = document.getElementById("newPasswordInput").value;
     const confirmPass = document.getElementById("confirmPasswordInput").value;
@@ -4552,6 +4700,71 @@ document.getElementById("passwordModal").addEventListener("click", function(e) {
 });
 </script>
 
+
+<!-- SUPERVISOR VIEW -->
+<main id="supervisorView" class="hidden-view max-w-7xl mx-auto px-4 py-7">
+
+<section class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 md:p-7 mb-6">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+<div>
+<p class="text-sm text-slate-500">لوحة التحكم</p>
+<h2 class="text-3xl font-black mt-1">🧑‍💼 لوحة المشرف</h2>
+<p class="text-sm text-slate-500 mt-1">يمكنك مراجعة التسليمات وقبولها أو رفضها</p>
+</div>
+<div class="flex gap-3 flex-wrap items-center">
+<span id="supStatusBadge" class="px-4 py-2 rounded-2xl bg-emerald-500/10 text-emerald-500 font-black text-sm">✅ الموقع شغال</span>
+<button onclick="loadSupervisorData()" class="px-5 py-3 rounded-2xl bg-black text-white dark:bg-white dark:text-black font-black">🔄 تحديث</button>
+</div>
+</div>
+</section>
+
+<!-- Stats -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-7">
+<div class="rounded-3xl p-5 bg-blue-500/10 border border-blue-500/20">
+<p class="text-sm text-blue-600 dark:text-blue-300 font-bold">👷 العمال</p>
+<p id="supWorkersCount" class="text-3xl font-black mt-2">0</p>
+</div>
+<div class="rounded-3xl p-5 bg-yellow-500/10 border border-yellow-500/20">
+<p class="text-sm text-yellow-600 dark:text-yellow-300 font-bold">📋 التسليمات</p>
+<p id="supSubmissionsCount" class="text-3xl font-black mt-2">0</p>
+</div>
+<div class="rounded-3xl p-5 bg-orange-500/10 border border-orange-500/20">
+<p class="text-sm text-orange-600 dark:text-orange-300 font-bold">⏳ بانتظار مراجعة</p>
+<p id="supPendingCount" class="text-3xl font-black mt-2">0</p>
+</div>
+<div class="rounded-3xl p-5 bg-emerald-500/10 border border-emerald-500/20">
+<p class="text-sm text-emerald-600 dark:text-emerald-300 font-bold">✅ تم القبول</p>
+<p id="supApprovedCount" class="text-3xl font-black mt-2">0</p>
+</div>
+</section>
+
+<!-- Workers Grid -->
+<section>
+<div class="mb-4">
+<h3 class="text-xl font-black">👷 العمال</h3>
+<p class="text-sm text-slate-500">اختر عامل لمراجعة تسليماته</p>
+</div>
+<div class="mb-4">
+<input type="text" id="supWorkerSearch" onkeyup="renderSupervisorWorkers()" placeholder="🔍 ابحث عن عامل..." class="w-full md:w-1/2 px-4 py-3 rounded-2xl bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 font-bold outline-none transition focus:border-indigo-500">
+</div>
+<div id="supWorkersGrid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+</section>
+
+<!-- Selected Worker Section -->
+<section id="supSelectedWorkerSection" class="hidden-view mt-7">
+<div class="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[.04] p-5 md:p-7">
+<div class="flex items-center gap-4 mb-6">
+<button onclick="document.getElementById('supSelectedWorkerSection').classList.add('hidden-view')" class="px-4 py-2 rounded-2xl bg-slate-100 dark:bg-white/5 font-bold text-sm">← رجوع</button>
+<div>
+<h3 id="supSelectedWorkerName" class="text-xl font-black"></h3>
+<p id="supSelectedWorkerUsername" class="text-sm text-slate-500"></p>
+</div>
+</div>
+<div id="supWorkerSubmissions" class="space-y-4"></div>
+</div>
+</section>
+
+</main>
 </body>
 </html>
 
