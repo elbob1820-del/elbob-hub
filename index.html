@@ -15,7 +15,9 @@ tailwind.config = {
 };
 </script>
 
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2181,22 +2183,6 @@ function cairoDateKey(value){
     let year = get("year");
     let month = get("month");
     let day = get("day");
-    const hour = get("hour");
-
-    if (hour < 3) {
-
-        const previousDay = new Date(
-            Date.UTC(year, month - 1, day)
-        );
-
-        previousDay.setUTCDate(
-            previousDay.getUTCDate() - 1
-        );
-
-        year = previousDay.getUTCFullYear();
-        month = previousDay.getUTCMonth() + 1;
-        day = previousDay.getUTCDate();
-    }
 
     return [
         String(year),
@@ -2667,6 +2653,11 @@ return;
 // ---------- NEW LIMITS ----------
 const MAX_TXT_SIZE = 10 * 1024 * 1024; // 10 MB
 const MAX_IMG_SIZE = 20 * 1024 * 1024; // 20 MB
+
+if(workFile.size === 0){
+toast(lang === "ar" ? "ملف التيكست فارغ! غير مسموح بتسليم ملف فاضي." : "Empty TXT file is not allowed.", "warning");
+return;
+}
 
 if(workFile.size > MAX_TXT_SIZE){
 toast(lang === "ar" ? "حجم ملف TXT كبير جداً (الحد الأقصى 10 ميجا)" : "TXT file too large (max 10MB)", "warning");
@@ -4089,6 +4080,9 @@ function injectAccountingSection() {
     <div class="flex gap-2 flex-wrap items-center">
         <input type="date" id="accDateFilter" onchange="renderAccounting(currentAccFilter)" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/10 outline-none text-sm font-bold ltr-input" title="فلترة بيوم معين">
         <button onclick="document.getElementById('accDateFilter').value=''; renderAccounting(currentAccFilter);" class="px-2 py-2 rounded-xl bg-red-500/10 text-red-500 font-bold text-sm hover:bg-red-500/20" title="إلغاء التاريخ">✖</button>
+        <button onclick="downloadAllFilesZip()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg transition flex items-center gap-2">
+            📦 تحميل تيكست اليوم (ZIP)
+        </button>
     </div>
     <div class="flex gap-2 flex-wrap">
         <button onclick="renderAccounting('all')" id="acc-all" class="px-4 py-2 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold text-sm">🌍 الكل</button>
@@ -4237,12 +4231,98 @@ function loadAllSubmissionsForAccounting() {
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                ${r.work_file ? `<a href="${r.work_file}" download target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs font-black hover:bg-slate-200 dark:hover:bg-white/10 transition">📄 ملف TXT</a>` : ''}
-                ${r.proof_image ? `<a href="${r.proof_image}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs font-black hover:bg-slate-200 dark:hover:bg-white/10 transition">🖼️ الصورة</a>` : ''}
+                ${r.work_file ? `<button onclick="openStorageFile('work-files', '${encodeURIComponent(r.work_file)}')" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs font-black hover:bg-slate-200 dark:hover:bg-white/10 transition">📄 ملف TXT</button>` : ''}
+                ${r.proof_image ? `<button onclick="openStorageFile('proofs', '${encodeURIComponent(r.proof_image)}')" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs font-black hover:bg-slate-200 dark:hover:bg-white/10 transition">🖼️ الصورة</button>` : ''}
             </div>
         </div>`;
     }).join('');
 }
+
+window.downloadAllFilesZip = async function() {
+    const dateInput = document.getElementById("accDateFilter");
+    if(!dateInput || !dateInput.value) {
+        return toast("يرجى اختيار تاريخ (يوم معين) أولاً من الفلتر فوق", "warning");
+    }
+    
+    let rows = submissions || [];
+    const selectedDate = dateInput.value;
+    
+    // Apply date filter
+    rows = rows.filter(r => r.created_at && r.created_at.startsWith(selectedDate));
+    
+    // Apply current tool/status filter
+    if(currentAccFilter === "yazeed") rows = rows.filter(r => !r.tool_name || r.tool_name === "yazeed");
+    else if(currentAccFilter === "tayeb") rows = rows.filter(r => r.tool_name === "tayeb");
+    else if(currentAccFilter === "pending") rows = rows.filter(r => r.payment_status !== "paid" && r.status !== "rejected");
+    
+    // Get only rows that have a work_file
+    const filesToDownload = rows.filter(r => r.work_file);
+    
+    if(filesToDownload.length === 0) {
+        return toast("لا يوجد ملفات تيكست (TXT) في هذا اليوم", "warning");
+    }
+    
+    toast(`جاري تجميع ${filesToDownload.length} ملفات... يرجى الانتظار`, "info");
+    
+    try {
+        const zip = new JSZip();
+        const folder = zip.folder(`Submissions_${selectedDate}`);
+        
+        let successCount = 0;
+        
+        for (const row of filesToDownload) {
+            try {
+                // Get signed URL from Supabase Storage
+                const cleanPath = decodeURIComponent(String(row.work_file).split(",")[0].trim().replace(/^true|false$/,"").trim());
+                if(!cleanPath || cleanPath === "null" || cleanPath === "undefined") continue;
+                
+                const { data, error } = await db.storage.from("work-files").createSignedUrl(cleanPath, 60);
+                if (error || !data?.signedUrl) continue;
+                
+                // Fetch the file content
+                const response = await fetch(data.signedUrl);
+                if (!response.ok) continue;
+                
+                const blob = await response.blob();
+                
+                // Generate filename based on worker name
+                const worker = profiles.find(p => p.id === row.worker_id);
+                const workerName = worker ? (worker.username || worker.full_name || "worker") : "worker";
+                const toolName = row.tool_name === "tayeb" ? "Tayeb" : "Yazeed";
+                
+                const fileName = `${workerName}_${toolName}_${cleanPath.split("/").pop()}`;
+                
+                folder.file(fileName, blob);
+                successCount++;
+            } catch (err) {
+                console.error("Error fetching file:", row.work_file, err);
+            }
+        }
+        
+        if (successCount === 0) {
+            return toast("فشل في تحميل الملفات، قد تكون محذوفة", "error");
+        }
+        
+        toast("جاري إنشاء ملف الـ ZIP...", "info");
+        
+        const content = await zip.generateAsync({type: "blob"});
+        const downloadUrl = URL.createObjectURL(content);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `Submissions_${selectedDate}_${currentAccFilter}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+        
+        toast("✅ تم تحميل الملفات بنجاح!", "success");
+        
+    } catch (err) {
+        console.error(err);
+        toast("حدث خطأ أثناء إنشاء ملف ZIP", "error");
+    }
+};
+
 
 // Auto-load accounting when owner view opens
 const _origShowOwner = showOwner;
